@@ -135,17 +135,21 @@ func generateModelCode(domain *Domain) (*ModelTmpl, error) {
 		lines := make([]Line, 0, 8)
 		for _, ident := range model.Ident {
 
-			tagDefault := generateTagGormDefaultValue(ident.Type)
-			if tagDefault == "'{}'" {
-				tagDefault += ";type:jsonb"
+			var tag strings.Builder
+			defaultValue := generateTagGormDefaultValue(ident.Type)
+			if defaultValue != "" {
+				tag.WriteString(";default:" + defaultValue)
+			}
+			if defaultValue == "'{}'" {
+				tag.WriteString(";type:jsonb")
 			}
 			if ident.Comment != "" {
-				tagDefault += fmt.Sprintf(";comment:%s", ident.Comment)
+				tag.WriteString(";comment:" + ident.Comment)
 			}
 			line := Line{
 				Name:    ident.Name,
 				Type:    fieldTypeToString(ident.Type),
-				Tag:     fmt.Sprintf(`gorm:"column:%s;notNull;default:%s"`, CamelCaseToUnderscore(ident.Name), tagDefault),
+				Tag:     fmt.Sprintf(`gorm:"column:%s;notNull%s"`, CamelCaseToUnderscore(ident.Name), tag.String()),
 				Comment: ident.Comment,
 			}
 			if ident.Name == "ID" {
