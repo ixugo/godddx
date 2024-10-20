@@ -1,0 +1,19 @@
+package {{.PackageName}}
+
+import "github.com/ixugo/goweb/pkg/web"
+
+type Find{{.Name}}Input struct{
+	web.PagerFilter
+ {{range .Lines}}{{if or (eq .Name "ID") (eq .Name "CreatedAt") (eq .Name "DeletedAt") (eq .Name "UpdatedAt")}}{{else}}	{{.Name}} {{.Type}} `form:"{{.Name | ToUnderscore}}"` {{.Comment|ToComment}}
+{{end}}{{end}}
+}
+
+type Edit{{.Name}}Input struct{
+ {{range .Lines}}{{if or (eq .Name "ID") (eq .Name "CreatedAt") (eq .Name "DeletedAt") (eq .Name "UpdatedAt")}}{{else}}	{{.Name}} {{.Type}} `json:"{{.Name | ToUnderscore}}"` {{.Comment|ToComment}}
+{{end}}{{end}}
+}
+
+type Add{{.Name}}Input struct{
+ {{range .Lines}}{{if or (eq .Name "ID") (eq .Name "CreatedAt") (eq .Name "DeletedAt") (eq .Name "UpdatedAt")}}{{else}}	{{.Name}} {{.Type}} `json:"{{.Name | ToUnderscore}}"` {{.Comment|ToComment}}
+{{end}}{{end}}
+}

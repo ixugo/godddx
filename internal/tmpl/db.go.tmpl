@@ -1,0 +1,34 @@
+{{ $packageName := .PackageName }}
+
+{{ $PackageName := .PackageName | ToUpperCamelCase }}
+
+
+package {{$packageName}}db
+
+import "gorm.io/gorm"
+
+var _ {{.PackageName}}.Storer = DB{}
+
+type DB struct{
+	db *gorm.DB
+}
+
+{{range .Models}}{{ if .IsNotDB }}{{else}}
+func(d DB) {{.Name}}() {{$packageName}}.{{.Name}}Storer {
+	return {{.Name}}{db:d.db}
+}
+{{end}}{{end}}
+
+
+func (d DB) AutoMigrate(ok bool) DB {
+	if !ok {
+		return d
+	}
+	if err := d.db.AutoMigrate(
+	{{range .Models}}{{ if .IsNotDB }}{{else}}new({{$packageName}}.{{.Name}}),
+	{{end}}{{end}}
+	); err != nil {
+		panic(err)
+	}
+	return d
+}

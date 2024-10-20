@@ -1,0 +1,17 @@
+package {{.PackageName}}
+
+import "github.com/ixugo/goweb/pkg/orm"
+
+{{range .Models}}{{ if .IsNotDB }}
+// {{.Name | ToUpperCamelCase}} domain model
+type {{.Name | ToUpperCamelCase}} struct{
+	{{range .Lines}}
+	{{.Name}} {{.Type}} `json:"{{.Name | ToUnderscore}}"` {{.Comment | ToComment}}{{end}}
+}
+
+// Scan implements orm.Scaner.
+func (i *{{.Name}}) Scan(input interface{}) error {
+	return orm.JsonUnmarshal(input, i)
+}
+
+{{end}}{{end}}

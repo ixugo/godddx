@@ -1,0 +1,63 @@
+package {{.PackageName}}
+
+import "context"
+import "github.com/ixugo/goweb/pkg/orm"
+import "github.com/ixugo/goweb/pkg/web"
+import "github.com/jinzhu/copier"
+
+
+type {{.Name}}Storer interface{
+	Find{{.Name}}(context.Context, *[]*{{.Name}}, orm.Pager, ...orm.QueryOption) (int64,error)
+	Get{{.Name}}(context.Context,*{{.Name}},...orm.QueryOption) error
+	Add{{.Name}}(context.Context,*{{.Name}}) error
+	Edit{{.Name}}(context.Context,*{{.Name}},func(*{{.Name}}),...orm.QueryOption) error
+	Del{{.Name}}(context.Context,*{{.Name}}, ...orm.QueryOption) error
+}
+
+func (c *Core) Find{{.Name}}(ctx context.Context,in *Find{{.Name}}Input) ([]*{{.Name}},int64,error) {
+	items := make([]*{{.Name}},0)
+	total,err := c.store.{{.Name}}().Find{{.Name}}(ctx,&items,in)
+	if err != nil {
+		return nil,0,web.ErrDB.Withf(`Find{{.Name}} err[%s]`, err.Error())
+	}
+	return items,total,nil
+}
+
+func (c *Core) Get{{.Name}}(ctx context.Context,id int) (*{{.Name}},error) {
+	var out {{.Name}}
+	if err := c.store.{{.Name}}().Get{{.Name}}(ctx,&out, orm.Where("id=?",id));err!=nil{
+		if orm.IsErrRecordNotFound(err) {
+			return nil,web.ErrNotFound.Withf(`Get{{.Name}} err[%s]`, err.Error())
+		}
+		return nil,web.ErrDB.Withf(`Get{{.Name}} err[%s]`, err.Error())
+	}
+	return &out,nil
+}
+
+func (c *Core) Add{{.Name}}(ctx context.Context,in *Add{{.Name}}Input) (*{{.Name}},error) {
+	var out {{.Name}}
+	if err := c.store.{{.Name}}().Add{{.Name}}(ctx, &out );err!=nil{
+		return nil,web.ErrDB.Withf(`Add{{.Name}} err[%s]`, err.Error())
+	}
+	return &out,nil
+}
+
+func (c *Core) Edit{{.Name}}(ctx context.Context,in *Edit{{.Name}}Input,id int) (*{{.Name}},error) {
+	var out {{.Name}}
+	if err :=c.store.{{.Name}}().Edit{{.Name}}(ctx,&out,func(b *{{.Name}}){
+		if err :=copier.Copy(b, in);err!=nil{
+			slog.Error("Copy","err",err)
+		}
+	},orm.Where("id=?",id));err!=nil{
+		return nil,web.ErrDB.Withf(`Edit{{.Name}} err[%s]`, err.Error())
+	}
+	return &out,nil
+}
+
+func (c *Core) Del{{.Name}}(ctx context.Context,id int) (*{{.Name}},error) {
+	var out {{.Name}}
+	if err := c.store.{{.Name}}().Del{{.Name}}(ctx, &out, orm.Where("id=?",id));err!=nil{
+		return nil,web.ErrDB.Withf(`Del{{.Name}} err[%s]`, err.Error())
+	}
+	return &out,nil
+}

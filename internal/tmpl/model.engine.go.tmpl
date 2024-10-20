@@ -1,0 +1,14 @@
+package {{.PackageName}}
+
+import "github.com/ixugo/goweb/pkg/orm"
+
+// {{.Name | ToUpperCamelCase}} domain model
+type {{.Name | ToUpperCamelCase}} struct{
+	{{range .Lines}}
+	{{.Name}} {{.Type}} `{{.Tag}}` {{.Comment|ToComment}}{{end}}
+}
+
+// TableName database table name
+func (*{{.Name}}) TableName() string {
+	return "{{.Name | Plural}}"
+}

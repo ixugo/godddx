@@ -1,0 +1,20 @@
+package {{.PackageName}}
+
+
+
+// Storer data persistence
+type Storer interface{
+{{range .Models}}{{ if .IsNotDB }}{{else}}{{.Name}}() {{.Name}}Storer
+{{end}}{{end}}
+}
+
+
+// Core business domain
+type Core struct {
+	store  Storer
+}
+
+// NewCore create business domain
+func NewCore(store Storer) *Core {
+	return &Core{store:store}
+}
