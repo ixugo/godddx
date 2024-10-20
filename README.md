@@ -34,6 +34,7 @@
     }
    ```
 3. 执行 `gowebx -f ./model.go` 即可生成代码
+4. 在项目中调用 registerUser 函数，将生成的代码注册到 gin 路由上。
 
 ## 功能
 

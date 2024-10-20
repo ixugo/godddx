@@ -9,17 +9,24 @@ import "gorm.io/gorm"
 
 var _ {{.PackageName}}.Storer = DB{}
 
+// DB Related business namespaces
 type DB struct{
 	db *gorm.DB
 }
 
+// NewDB instance object
+func NewDB(db *gorm.DB) DB {
+	return DB{db:db}
+}
+
 {{range .Models}}{{ if .IsNotDB }}{{else}}
+// {{.Name}} Get business instance
 func(d DB) {{.Name}}() {{$packageName}}.{{.Name}}Storer {
 	return {{.Name}}{db:d.db}
 }
 {{end}}{{end}}
 
-
+// AutoMigrate sync database
 func (d DB) AutoMigrate(ok bool) DB {
 	if !ok {
 		return d

@@ -11,16 +11,19 @@ import (
 
 {{ $PackageName := .PackageName | ToUpperCamelCase }}
 
-
-
 type {{$PackageName}}API struct{
-	{{.PackageName}}Core {{.PackageName}}.Core
+	{{.PackageName}}Core *{{.PackageName}}.Core
+}
+
+func New{{$PackageName}}API(db *gorm.DB) {{$PackageName}}API {
+	core := {{$packageName}}.NewCore({{$packageName}}db.NewDB(db).AutoMigrate(true))
+	return {{$PackageName}}API{ {{$packageName}}Core: core}
 }
 
 func register{{$PackageName}}(g gin.IRouter,api {{$PackageName}}API,handler...gin.HandlerFunc) {
 	{{range .Models}}{{if .IsNotDB}}{{else}}
 	{
-		group := g.Group("/{{.Name | ToUnderscore}}", handler...)
+		group := g.Group("/{{.Name|ToUnderscore|Plural}}", handler...)
 		group.GET("", web.WarpH(api.find{{.Name}}))
 		group.GET("/:id", web.WarpH(api.get{{.Name}}))
 		group.PUT("/:id", web.WarpH(api.edit{{.Name}}))
@@ -35,26 +38,26 @@ func register{{$PackageName}}(g gin.IRouter,api {{$PackageName}}API,handler...gi
 
 // >>> {{$tableName}} >>>>>>>>>>>>>>>>>>>>
 
-func (a *{{$PackageName}}API) find{{.Name}}(c *gin.Context,in *{{$packageName}}.Find{{.Name}}Input) (any,error) {
+func (a {{$PackageName}}API) find{{.Name}}(c *gin.Context,in *{{$packageName}}.Find{{.Name}}Input) (any,error) {
 	items,total,err :=a.{{$packageName}}Core.Find{{.Name}}(c.Request.Context(), in )
 	return gin.H{"items":items,"total":total},err
 }
 
-func (a *{{$PackageName}}API) get{{.Name}}(c *gin.Context,_ *struct{})(any,error){
+func (a {{$PackageName}}API) get{{.Name}}(c *gin.Context,_ *struct{})(any,error){
 	{{$tableName}}ID,_ := strconv.Atoi(c.Param("id"))
 	return a.{{$packageName}}Core.Get{{.Name}}(c.Request.Context(),{{$tableName}}ID)
 }
 
-func (a *{{$PackageName}}API) edit{{.Name}}(c *gin.Context,in *{{$packageName}}.Edit{{.Name}}Input)(any,error){
+func (a {{$PackageName}}API) edit{{.Name}}(c *gin.Context,in *{{$packageName}}.Edit{{.Name}}Input)(any,error){
 	{{$tableName}}ID,_ := strconv.Atoi(c.Param("id"))
 	return a.{{$packageName}}Core.Edit{{.Name}}(c.Request.Context(), in,{{$tableName}}ID )
 }
 
-func (a *{{$PackageName}}API) add{{.Name}}(c *gin.Context,in *{{$packageName}}.Add{{.Name}}Input)(any,error){
+func (a {{$PackageName}}API) add{{.Name}}(c *gin.Context,in *{{$packageName}}.Add{{.Name}}Input)(any,error){
 	return a.{{$packageName}}Core.Add{{.Name}}(c.Request.Context(), in)
 }
 
-func (a *{{$PackageName}}API) del{{.Name}}(c *gin.Context,_ *struct{})(any,error){
+func (a {{$PackageName}}API) del{{.Name}}(c *gin.Context,_ *struct{})(any,error){
 	{{$tableName}}ID,_ := strconv.Atoi(c.Param("id"))
 	return a.{{$packageName}}Core.Del{{.Name}}(c.Request.Context(), {{$tableName}}ID)
 }
