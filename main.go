@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"git.lnton.com/lnton/pkg/process"
-	"github.com/ixugo/goweb_tools/internal/tmpl"
+	"github.com/ixugo/gowebx/internal/tmpl"
 )
 
 // CheckAndExtractModuleName 判断当前文件夹下是否存在 go.mod 并提取 module 名称
@@ -51,7 +51,7 @@ func main() {
 
 	moduleName := *module
 	if moduleName == "" {
-		moduleName = CheckAndExtractModuleName() //  `github.com/ixugo/goweb_tools`
+		moduleName = CheckAndExtractModuleName() //  `github.com/ixugo/gowebx`
 	}
 	if moduleName == "" {
 		fmt.Println("未指定模块名称")

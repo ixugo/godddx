@@ -1,4 +1,4 @@
-module github.com/ixugo/goweb_tools
+module github.com/ixugo/gowebx
 
 go 1.23.0
 
