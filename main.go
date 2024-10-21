@@ -53,7 +53,7 @@ func main() {
 		moduleName = CheckAndExtractModuleName() //  `github.com/ixugo/gowebx`
 	}
 	if moduleName == "" {
-		fmt.Println("未指定模块名称")
+		fmt.Println("未指定模块名称，请在 go.mod 同目录下执行，或者使用 -m 来指定模块名称")
 		return
 	}
 	files := strings.Split(*file, ",")

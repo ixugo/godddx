@@ -40,6 +40,9 @@ func (c *Core) Get{{.Name}}(ctx context.Context,id int) (*{{.Name}},error) {
 // Add{{.Name}} Insert into database
 func (c *Core) Add{{.Name}}(ctx context.Context,in *Add{{.Name}}Input) (*{{.Name}},error) {
 	var out {{.Name}}
+	if err :=copier.Copy(&out, in);err!=nil{
+		slog.Error("Copy","err",err)
+	}
 	if err := c.store.{{.Name}}().Add(ctx, &out );err!=nil{
 		return nil,web.ErrDB.Withf(`Add err[%s]`, err.Error())
 	}
