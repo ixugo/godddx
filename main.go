@@ -2,14 +2,13 @@ package main
 
 import (
 	"bufio"
-	"context"
 	"flag"
 	"fmt"
 	"log/slog"
 	"os"
+	"os/exec"
 	"strings"
 
-	"git.lnton.com/lnton/pkg/process"
 	"github.com/ixugo/gowebx/internal/tmpl"
 )
 
@@ -71,15 +70,22 @@ func main() {
 		}
 	}
 
-	p := process.NewProcess("", "goimports", "-w", ".")
-	if err := p.Run(context.TODO()); err != nil {
+	if err := CommandContext("goimports", "-w", "."); err != nil {
 		// fmt.Println(err)
 	}
 
-	p = process.NewProcess("", "gofumpt", "-l", "-w", ".")
-	if err := p.Run(context.TODO()); err != nil {
+	if err := CommandContext("gofumpt", "-l", "-w", "."); err != nil {
 		// fmt.Println(err)
 	}
+}
 
-	// tmpl.ParseFile("/Users/xugo/Desktop/goweb_tools/internal/tmpl/aa.go")
+func CommandContext(args ...string) error {
+	cmd := exec.Command(args[0], args[1:]...)
+	cmd.Stdout = os.Stdout
+	cmd.Stdin = os.Stdin
+	cmd.Env = os.Environ()
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	return cmd.Wait()
 }

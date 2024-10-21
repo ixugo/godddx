@@ -1,6 +1,6 @@
 package tmpl
 
-import "git.lnton.com/lnton/pkg/orm"
+import "github.com/ixugo/goweb/pkg/orm"
 
 type User struct {
 	Age      int64  //  年龄
