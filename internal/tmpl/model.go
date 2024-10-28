@@ -8,6 +8,7 @@ import (
 	"go/printer"
 	"go/token"
 	"strings"
+	"unicode"
 )
 
 // 模板类
@@ -42,6 +43,7 @@ type Models struct {
 	Name    string
 	Ident   []Attribute
 	IsNotDB bool // 顶层结构体默认 true，别人的属性，默认 false
+	// Alias   []string
 }
 
 type Attribute struct {
@@ -74,6 +76,10 @@ func ParseFile(path string) (*Domain, error) {
 					var model Models
 					model.Name = typeSpec.Name.Name
 
+					if len(model.Name) > 0 && unicode.IsLower(rune(model.Name[0])) {
+						model.IsNotDB = true
+					}
+
 					// 遍历结构体的字段
 					for _, field := range structType.Fields.List {
 						// 每个字段可能有多个名称
@@ -88,6 +94,34 @@ func ParseFile(path string) (*Domain, error) {
 					}
 					out.Models = append(out.Models, &model)
 				}
+
+				// 处理别名
+				// if alias, ok := typeSpec.Type.(*ast.Ident); ok && alias.Obj != nil {
+				// 	//  type aliasName = 原始类型
+				// 	//  type aliasName 原始类型
+				// 	// 两个都是别名
+				// 	originalType := alias.Obj.Decl.(*ast.TypeSpec).Type
+				// 	if structType, ok := originalType.(*ast.StructType); ok {
+				// 		var model Models
+				// 		model.Name = typeSpec.Name.Name
+				// 		// model.IsNotDB = true
+
+				// 		// 遍历结构体的字段
+				// 		for _, field := range structType.Fields.List {
+				// 			// 每个字段可能有多个名称
+				// 			for _, name := range field.Names {
+				// 				comment := strings.TrimSpace(field.Comment.Text())
+				// 				model.Ident = append(model.Ident, Attribute{
+				// 					Name:    name.Name,
+				// 					Type:    field.Type,
+				// 					Comment: comment,
+				// 				})
+				// 			}
+				// 		}
+				// 		out.Models = append(out.Models, &model)
+				// 	}
+				// }
+
 			}
 		}
 		return true
@@ -113,12 +147,15 @@ func generateModelCode(domain *Domain) (*ModelTmpl, error) {
 		structs[model.Name] = model
 	}
 
+	// 判断是否是顶层结构体，顶层结构体才是 db
+	// 首字母小写的，也不是 db
 	for _, model := range domain.Models {
 		for _, filed := range model.Ident {
 			_, ok := filed.Type.(*ast.StructType)
 			if ok {
 				continue
 			}
+
 			aname := getStructName(filed.Type)
 			if f, ok := structs[aname]; ok {
 				f.IsNotDB = true

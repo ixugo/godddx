@@ -4,8 +4,8 @@ package {{.PackageName}}
 import "github.com/ixugo/goweb/pkg/orm"
 
 {{range .Models}}{{ if .IsNotDB }}
-// {{.Name | ToUpperCamelCase}} domain model
-type {{.Name | ToUpperCamelCase}} struct{
+// {{.Name | IfUpperUnderscoreToUpperCamelCase}} domain model
+type {{.Name | IfUpperUnderscoreToUpperCamelCase}} struct{
 	{{range .Lines}}
 	{{.Name}} {{.Type}} `json:"{{.Name | ToUnderscore}}"` {{.Comment | ToComment}}{{end}}
 }

@@ -15,6 +15,10 @@
 
 用于自动生成 CRUD 代码
 
+## 引用文章
+
+[Google API Design Guide](https://google-cloud.gitbook.io/api-design-guide)
+
 ## 安装
 
 `go install github.com/ixugo/gowebx@latest`

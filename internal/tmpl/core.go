@@ -57,11 +57,12 @@ func Start(path, module string) error {
 
 		tpl := template.Must(template.New("abc").Funcs(
 			template.FuncMap{
-				"ToUpperCamelCase": UnderscoreToUpperCamelCase, // 首字母大写驼峰
-				"ToLowerCamelCase": UnderscoreToLowerCamelCase, // 首字母小写驼峰
-				"ToUnderscore":     CamelCaseToUnderscore,      // 蛇形
-				"Plural":           Plural,
-				"ToComment":        ToComment,
+				"ToUpperCamelCase":                  UnderscoreToUpperCamelCase, // 首字母大写驼峰
+				"ToLowerCamelCase":                  UnderscoreToLowerCamelCase, // 首字母小写驼峰
+				"ToUnderscore":                      CamelCaseToUnderscore,      // 蛇形
+				"Plural":                            Plural,
+				"ToComment":                         ToComment,
+				"IfUpperUnderscoreToUpperCamelCase": IfUpperUnderscoreToUpperCamelCase,
 			},
 		).ParseFS(files, "api.go.tmpl", "db.go.tmpl"))
 
@@ -87,11 +88,12 @@ func handlerDomainModel(out *Domain, bufMap map[string]*bytes.Buffer) error {
 
 	tpl := template.Must(template.New("abc").Funcs(
 		template.FuncMap{
-			"ToUpperCamelCase": UnderscoreToUpperCamelCase, // 首字母大写驼峰
-			"ToLowerCamelCase": UnderscoreToLowerCamelCase, // 首字母小写驼峰
-			"ToUnderscore":     CamelCaseToUnderscore,      // 蛇形
-			"Plural":           Plural,
-			"ToComment":        ToComment,
+			"ToUpperCamelCase":                  UnderscoreToUpperCamelCase, // 首字母大写驼峰
+			"ToLowerCamelCase":                  UnderscoreToLowerCamelCase, // 首字母小写驼峰
+			"ToUnderscore":                      CamelCaseToUnderscore,      // 蛇形
+			"Plural":                            Plural,
+			"ToComment":                         ToComment,
+			"IfUpperUnderscoreToUpperCamelCase": IfUpperUnderscoreToUpperCamelCase,
 		},
 	).ParseFS(files, "model.go.tmpl", "model.engine.go.tmpl"))
 
@@ -125,11 +127,12 @@ func handlerDomainCore(out *Domain, bufMap map[string]*bytes.Buffer) error {
 
 	tpl := template.Must(template.New("abc").Funcs(
 		template.FuncMap{
-			"ToUpperCamelCase": UnderscoreToUpperCamelCase, // 首字母大写驼峰
-			"ToLowerCamelCase": UnderscoreToLowerCamelCase, // 首字母小写驼峰
-			"ToUnderscore":     CamelCaseToUnderscore,      // 蛇形
-			"Plural":           Plural,
-			"ToComment":        ToComment,
+			"ToUpperCamelCase":                  UnderscoreToUpperCamelCase, // 首字母大写驼峰
+			"ToLowerCamelCase":                  UnderscoreToLowerCamelCase, // 首字母小写驼峰
+			"ToUnderscore":                      CamelCaseToUnderscore,      // 蛇形
+			"Plural":                            Plural,
+			"ToComment":                         ToComment,
+			"IfUpperUnderscoreToUpperCamelCase": IfUpperUnderscoreToUpperCamelCase,
 		},
 	).ParseFS(files, "core.go.tmpl", "core.engine.go.tmpl", "param.engine.go.tmpl"))
 
@@ -177,11 +180,12 @@ func handlerDomainDB(out *Domain, bufMap map[string]*bytes.Buffer) error {
 
 	tpl := template.Must(template.New("abc").Funcs(
 		template.FuncMap{
-			"ToUpperCamelCase": UnderscoreToUpperCamelCase, // 首字母大写驼峰
-			"ToLowerCamelCase": UnderscoreToLowerCamelCase, // 首字母小写驼峰
-			"ToUnderscore":     CamelCaseToUnderscore,      // 蛇形
-			"Plural":           Plural,
-			"ToComment":        ToComment,
+			"ToUpperCamelCase":                  UnderscoreToUpperCamelCase, // 首字母大写驼峰
+			"ToLowerCamelCase":                  UnderscoreToLowerCamelCase, // 首字母小写驼峰
+			"ToUnderscore":                      CamelCaseToUnderscore,      // 蛇形
+			"Plural":                            Plural,
+			"ToComment":                         ToComment,
+			"IfUpperUnderscoreToUpperCamelCase": IfUpperUnderscoreToUpperCamelCase,
 		},
 	).ParseFS(files, "db.engine.go.tmpl", "db.go.tmpl"))
 

@@ -1,12 +1,26 @@
 package tmpl
 
 import (
+	"fmt"
 	"strings"
 	"unicode"
 )
 
 // 首字母大写驼峰
 func UnderscoreToUpperCamelCase(s string) string {
+	// 字符串替换, -1 表示不限制次数
+	s = strings.Replace(s, "_", " ", -1)
+	// 每个单词首字母大写
+	s = strings.Title(s)
+	return strings.Replace(s, " ", "", -1)
+}
+
+// 如果首字母是大写，则首字母大写驼峰
+func IfUpperUnderscoreToUpperCamelCase(s string) string {
+	if len(s) > 0 && unicode.IsLower(rune(s[0])) {
+		return fmt.Sprintf("%c%s", rune(s[0]), UnderscoreToUpperCamelCase(s)[1:])
+	}
+
 	// 字符串替换, -1 表示不限制次数
 	s = strings.Replace(s, "_", " ", -1)
 	// 每个单词首字母大写
