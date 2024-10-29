@@ -23,7 +23,7 @@ func NewDB(db *gorm.DB) DB {
 {{range .Models}}{{ if .IsNotDB }}{{else}}
 // {{.Name}} Get business instance
 func(d DB) {{.Name}}() {{$packageName}}.{{.Name}}Storer {
-	return {{.Name}}{db:d.db}
+	return {{.Name}}(d)
 }
 {{end}}{{end}}
 

@@ -11,9 +11,7 @@ import (
 var _ {{.PackageName}}.{{.Name}}Storer = {{.Name}}{}
 
 // {{.Name}} Related business namespaces
-type {{.Name}} struct{
-	db *gorm.DB
-}
+type {{.Name}} DB
 
 // New{{.Name}} instance object
 func New{{.Name}}(db *gorm.DB) {{.Name}} {
