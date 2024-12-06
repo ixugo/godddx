@@ -9,7 +9,7 @@ import (
 	"text/template"
 )
 
-//go:embed api.go.tmpl core.go.tmpl db.go.tmpl model.go.tmpl db.engine.go.tmpl core.engine.go.tmpl model.engine.go.tmpl param.engine.go.tmpl
+//go:embed api.go.tmpl core.go.tmpl db.go.tmpl model.go.tmpl db.engine.go.tmpl core.engine.go.tmpl model.engine.go.tmpl param.engine.go.tmpl db_test.go.tmpl db.engine_test.go.tmpl
 var files embed.FS
 
 type Data struct {
@@ -187,12 +187,20 @@ func handlerDomainDB(out *Domain, bufMap map[string]*bytes.Buffer) error {
 			"ToComment":                         ToComment,
 			"IfUpperUnderscoreToUpperCamelCase": IfUpperUnderscoreToUpperCamelCase,
 		},
-	).ParseFS(files, "db.engine.go.tmpl", "db.go.tmpl"))
+	).ParseFS(files, "db.engine.go.tmpl", "db.go.tmpl", "db_test.go.tmpl", "db.engine_test.go.tmpl"))
 
 	if err := tpl.ExecuteTemplate(buf, "db.go.tmpl", tp); err != nil {
 		panic(err)
 	}
 	bufMap[fmt.Sprintf("internal/core/%s/store/%sdb/db.go", out.PackageName, out.PackageName)] = buf
+
+	{
+		dbtestBuf := bytes.NewBuffer(nil)
+		if err := tpl.ExecuteTemplate(dbtestBuf, "db_test.go.tmpl", tp); err != nil {
+			panic(err)
+		}
+		bufMap[fmt.Sprintf("internal/core/%s/store/%sdb/db_test.go", out.PackageName, out.PackageName)] = dbtestBuf
+	}
 
 	for _, v := range tp.Models {
 		if v.IsNotDB {
@@ -205,6 +213,14 @@ func handlerDomainDB(out *Domain, bufMap map[string]*bytes.Buffer) error {
 			panic(err)
 		}
 		bufMap[fmt.Sprintf("internal/core/%s/store/%sdb/%s.go", out.PackageName, out.PackageName, CamelCaseToUnderscore(v.Name))] = buf
+
+		{
+			dbengineBuf := bytes.NewBuffer(nil)
+			if err := tpl.ExecuteTemplate(dbengineBuf, "db.engine_test.go.tmpl", v); err != nil {
+				panic(err)
+			}
+			bufMap[fmt.Sprintf("internal/core/%s/store/%sdb/%s_test.go", out.PackageName, out.PackageName, CamelCaseToUnderscore(v.Name))] = dbengineBuf
+		}
 	}
 
 	return nil

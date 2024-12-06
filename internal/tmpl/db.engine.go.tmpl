@@ -42,3 +42,18 @@ func (d {{.Name}})Edit(ctx context.Context,b *{{.PackageName}}.{{.Name}},fn func
 func (d {{.Name}})Del(ctx context.Context,b *{{.PackageName}}.{{.Name}},args...orm.QueryOption) error {
 	return orm.DeleteWithContext(ctx,d.db, b, args...)
 }
+
+func (d {{.Name}})Session(ctx context.Context,fn ...func(*gorm.DB) error) error {
+	return d.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		for _, f := range fn {
+			if err := f(tx); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
+func (d {{.Name}}) EditWithSession(tx *gorm.DB, b *{{.PackageName}}.{{.Name}}, fn func(b *{{.PackageName}}.{{.Name}}) error, opts ...orm.QueryOption) error {
+	return orm.UpdateWithSession(tx, b, fn,opts... )
+}
