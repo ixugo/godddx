@@ -15,17 +15,19 @@
 
 用于自动生成 CRUD 代码
 
-## 引用文章
+## 设计参考
 
 [Google API Design Guide](https://google-cloud.gitbook.io/api-design-guide)
 
 ## 安装
 
-`go install github.com/ixugo/gowebx@latest`
+在终端执行
 
-`go install mvdan.cc/gofumpt@latest`
-
-`go install golang.org/x/tools/cmd/goimports`
+```bash
+go install github.com/ixugo/gowebx@latest
+go install mvdan.cc/gofumpt@latest
+go install golang.org/x/tools/cmd/goimports
+```
 
 ## 流程
 
@@ -48,10 +50,9 @@
 - [ ] 支持分页查询中，前端传递排序方式
 - [ ] 支持分页查询中，前端传递条件
 - [ ] 生成 5 项常用的 redis 缓存代码
-- [ ] 训练 ai ，生成更复杂的连表代码
 
 ## 问题
 
-为什么不读数据库生成代码?
+> 为什么不读数据库生成代码?
 
 平时在表中用 json 类型较多，读数据库没办法生成 json 结构体。
