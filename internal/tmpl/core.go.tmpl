@@ -15,6 +15,6 @@ type Core struct {
 }
 
 // NewCore create business domain
-func NewCore(store Storer) *Core {
-	return &Core{store:store}
+func NewCore(store Storer) Core {
+	return Core{store:store}
 }

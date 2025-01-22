@@ -13,7 +13,7 @@ import (
 {{ $PackageName := .PackageName | ToUpperCamelCase }}
 
 type {{$PackageName}}API struct{
-	{{.PackageName}}Core *{{.PackageName}}.Core
+	{{.PackageName}}Core {{.PackageName}}.Core
 }
 
 func New{{$PackageName}}API(db *gorm.DB) {{$PackageName}}API {
