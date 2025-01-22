@@ -41,12 +41,18 @@ func CheckAndExtractModuleName() string {
 }
 
 var (
-	file   = flag.String("f", "", "领域模型文件，多个用逗号分隔")
-	module = flag.String("m", "", "模块名")
+	file    = flag.String("f", "", "领域模型文件，多个用逗号分隔")
+	module  = flag.String("m", "", "模块名")
+	version = flag.Bool("v", false, "版本号")
 )
 
 func main() {
 	flag.Parse()
+
+	if *version {
+		fmt.Println("github.com/ixugo/gowebx v0.3.2")
+		return
+	}
 
 	moduleName := *module
 	if moduleName == "" {
