@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"github.com/gin-gonic/gin"
 	"github.com/ixugo/goweb/pkg/web"
+	"github.com/ixugo/goweb/pkg/orm"
 	"{{.ModuleName}}/internal/core/{{.PackageName}}"
 )
 
@@ -17,7 +18,7 @@ type {{$PackageName}}API struct{
 }
 
 func New{{$PackageName}}API(db *gorm.DB) {{$PackageName}}API {
-	core := {{$packageName}}.NewCore({{$packageName}}db.NewDB(db).AutoMigrate(true))
+	core := {{$packageName}}.NewCore({{$packageName}}db.NewDB(db).AutoMigrate(orm.EnabledAutoMigrate))
 	return {{$PackageName}}API{ {{$packageName}}Core: core}
 }
 
