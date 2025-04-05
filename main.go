@@ -9,7 +9,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/ixugo/gowebx/internal/tmpl"
+	"github.com/ixugo/godddx/internal/tmpl"
 )
 
 // CheckAndExtractModuleName 判断当前文件夹下是否存在 go.mod 并提取 module 名称
@@ -50,13 +50,13 @@ func main() {
 	flag.Parse()
 
 	if *version {
-		fmt.Println("github.com/ixugo/gowebx v0.3.2")
+		fmt.Println("github.com/ixugo/godddx v0.3.2")
 		return
 	}
 
 	moduleName := *module
 	if moduleName == "" {
-		moduleName = CheckAndExtractModuleName() //  `github.com/ixugo/gowebx`
+		moduleName = CheckAndExtractModuleName() //  `github.com/ixugo/godddx`
 	}
 	if moduleName == "" {
 		fmt.Println("未指定模块名称，请在 go.mod 同目录下执行，或者使用 -m 来指定模块名称")

@@ -2,8 +2,8 @@
 package {{.PackageName}}
 
 import "context"
-import "github.com/ixugo/goweb/pkg/orm"
-import "github.com/ixugo/goweb/pkg/web"
+import "github.com/ixugo/goddd/pkg/orm"
+import "github.com/ixugo/goddd/pkg/web"
 import "github.com/jinzhu/copier"
 
 
