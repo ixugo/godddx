@@ -41,7 +41,7 @@ func register{{$PackageName}}(g gin.IRouter,api {{$PackageName}}API,handler...gi
 // >>> {{$tableName}} >>>>>>>>>>>>>>>>>>>>
 
 func (a {{$PackageName}}API) find{{.Name}}(c *gin.Context,in *{{$packageName}}.Find{{.Name}}Input) (any,error) {
-	items,total,err :=a.{{$packageName}}Core.Find{{.Name}}(c.Request.Context(), in )
+	items,total,err :=a.{{$packageName}}Core.Find{{.Name}}s(c.Request.Context(), in )
 	return gin.H{"items":items,"total":total},err
 }
 
