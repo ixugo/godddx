@@ -26,7 +26,7 @@ func register{{$PackageName}}(g gin.IRouter,api {{$PackageName}}API,handler...gi
 	{{range .Models}}{{if .IsNotDB}}{{else}}
 	{
 		group := g.Group("/{{.Name|ToUnderscore|Plural}}", handler...)
-		group.GET("", web.WarpH(api.find{{.Name}}))
+		group.GET("", web.WarpH(api.find{{.Name}}s))
 		group.GET("/:id", web.WarpH(api.get{{.Name}}))
 		group.PUT("/:id", web.WarpH(api.edit{{.Name}}))
 		group.POST("", web.WarpH(api.add{{.Name}}))
@@ -40,8 +40,8 @@ func register{{$PackageName}}(g gin.IRouter,api {{$PackageName}}API,handler...gi
 
 // >>> {{$tableName}} >>>>>>>>>>>>>>>>>>>>
 
-func (a {{$PackageName}}API) find{{.Name}}(c *gin.Context,in *{{$packageName}}.Find{{.Name}}Input) (any,error) {
-	items,total,err :=a.{{$packageName}}Core.Find{{.Name}}(c.Request.Context(), in )
+func (a {{$PackageName}}API) find{{.Name}}s(c *gin.Context,in *{{$packageName}}.Find{{.Name}}Input) (any,error) {
+	items,total,err :=a.{{$packageName}}Core.Find{{.Name}}s(c.Request.Context(), in )
 	return gin.H{"items":items,"total":total},err
 }
 
