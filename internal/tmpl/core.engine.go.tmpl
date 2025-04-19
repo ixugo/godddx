@@ -21,7 +21,7 @@ func (c Core) Find{{.Name}}s(ctx context.Context,in *Find{{.Name}}Input) ([]*{{.
 	items := make([]*{{.Name}},0)
 	total,err := c.store.{{.Name}}().Find(ctx,&items,in)
 	if err != nil {
-		return nil,0,web.ErrDB.Withf(`Find err[%s]`, err.Error())
+		return nil,0,reason.ErrDB.Withf(`Find err[%s]`, err.Error())
 	}
 	return items,total,nil
 }
@@ -31,9 +31,9 @@ func (c Core) Get{{.Name}}(ctx context.Context,id int) (*{{.Name}},error) {
 	var out {{.Name}}
 	if err := c.store.{{.Name}}().Get(ctx,&out, orm.Where("id=?",id));err!=nil{
 		if orm.IsErrRecordNotFound(err) {
-			return nil,web.ErrNotFound.Withf(`Get err[%s]`, err.Error())
+			return nil,reason.ErrNotFound.Withf(`Get err[%s]`, err.Error())
 		}
-		return nil,web.ErrDB.Withf(`Get err[%s]`, err.Error())
+		return nil,reason.ErrDB.Withf(`Get err[%s]`, err.Error())
 	}
 	return &out,nil
 }
@@ -45,7 +45,7 @@ func (c Core) Add{{.Name}}(ctx context.Context,in *Add{{.Name}}Input) (*{{.Name}
 		slog.Error("Copy","err",err)
 	}
 	if err := c.store.{{.Name}}().Add(ctx, &out );err!=nil{
-		return nil,web.ErrDB.Withf(`Add err[%s]`, err.Error())
+		return nil,reason.ErrDB.Withf(`Add err[%s]`, err.Error())
 	}
 	return &out,nil
 }
@@ -58,7 +58,7 @@ func (c Core) Edit{{.Name}}(ctx context.Context,in *Edit{{.Name}}Input,id int) (
 			slog.Error("Copy","err",err)
 		}
 	},orm.Where("id=?",id));err!=nil{
-		return nil,web.ErrDB.Withf(`Edit err[%s]`, err.Error())
+		return nil,reason.ErrDB.Withf(`Edit err[%s]`, err.Error())
 	}
 	return &out,nil
 }
@@ -67,7 +67,7 @@ func (c Core) Edit{{.Name}}(ctx context.Context,in *Edit{{.Name}}Input,id int) (
 func (c Core) Del{{.Name}}(ctx context.Context,id int) (*{{.Name}},error) {
 	var out {{.Name}}
 	if err := c.store.{{.Name}}().Del(ctx, &out, orm.Where("id=?",id));err!=nil{
-		return nil,web.ErrDB.Withf(`Del err[%s]`, err.Error())
+		return nil,reason.ErrDB.Withf(`Del err[%s]`, err.Error())
 	}
 	return &out,nil
 }

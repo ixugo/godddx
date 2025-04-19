@@ -21,7 +21,7 @@ func (c Core) Find{{.Name}}(ctx context.Context,in *Find{{.Name}}Input) ([]*{{.N
 	items := make([]*{{.Name}},0)
 	total,err := c.store.{{.Name}}().Find{{.Name}}(ctx,&items,in)
 	if err != nil {
-		return nil,0,web.ErrDB.Withf(`Find{{.Name}} err[%s]`, err.Error())
+		return nil,0,reason.ErrDB.Withf(`Find{{.Name}} err[%s]`, err.Error())
 	}
 	return items,total,nil
 }
@@ -31,9 +31,9 @@ func (c Core) Get{{.Name}}(ctx context.Context,id int) (*{{.Name}},error) {
 	var out {{.Name}}
 	if err := c.store.{{.Name}}().Get{{.Name}}(ctx,&out, orm.Where("id=?",id));err!=nil{
 		if orm.IsErrRecordNotFound(err) {
-			return nil,web.ErrNotFound.Withf(`Get{{.Name}} err[%s]`, err.Error())
+			return nil,reason.ErrNotFound.Withf(`Get{{.Name}} err[%s]`, err.Error())
 		}
-		return nil,web.ErrDB.Withf(`Get{{.Name}} err[%s]`, err.Error())
+		return nil,reason.ErrDB.Withf(`Get{{.Name}} err[%s]`, err.Error())
 	}
 	return &out,nil
 }
@@ -42,7 +42,7 @@ func (c Core) Get{{.Name}}(ctx context.Context,id int) (*{{.Name}},error) {
 func (c Core) Add{{.Name}}(ctx context.Context,in *Add{{.Name}}Input) (*{{.Name}},error) {
 	var out {{.Name}}
 	if err := c.store.{{.Name}}().Add{{.Name}}(ctx, &out );err!=nil{
-		return nil,web.ErrDB.Withf(`Add{{.Name}} err[%s]`, err.Error())
+		return nil,reason.ErrDB.Withf(`Add{{.Name}} err[%s]`, err.Error())
 	}
 	return &out,nil
 }
@@ -55,7 +55,7 @@ func (c Core) Edit{{.Name}}(ctx context.Context,in *Edit{{.Name}}Input,id int) (
 			slog.Error("Copy","err",err)
 		}
 	},orm.Where("id=?",id));err!=nil{
-		return nil,web.ErrDB.Withf(`Edit{{.Name}} err[%s]`, err.Error())
+		return nil,reason.ErrDB.Withf(`Edit{{.Name}} err[%s]`, err.Error())
 	}
 	return &out,nil
 }
@@ -64,7 +64,7 @@ func (c Core) Edit{{.Name}}(ctx context.Context,in *Edit{{.Name}}Input,id int) (
 func (c Core) Del{{.Name}}(ctx context.Context,id int) (*{{.Name}},error) {
 	var out {{.Name}}
 	if err := c.store.{{.Name}}().Del{{.Name}}(ctx, &out, orm.Where("id=?",id));err!=nil{
-		return nil,web.ErrDB.Withf(`Del{{.Name}} err[%s]`, err.Error())
+		return nil,reason.ErrDB.Withf(`Del{{.Name}} err[%s]`, err.Error())
 	}
 	return &out,nil
 }
