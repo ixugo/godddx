@@ -18,7 +18,7 @@ type {{.Name}}Storer interface{
 
 // Find{{.Name}} Paginated search
 func (c Core) Find{{.Name}}s(ctx context.Context,in *Find{{.Name}}Input) ([]*{{.Name}},int64,error) {
-	items := make([]*{{.Name}},0)
+	items := make([]*{{.Name}},0, in.Limit())
 	total,err := c.store.{{.Name}}().Find(ctx,&items,in)
 	if err != nil {
 		return nil,0,reason.ErrDB.Withf(`Find err[%s]`, err.Error())
