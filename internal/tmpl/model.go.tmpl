@@ -2,6 +2,7 @@
 package {{.PackageName}}
 
 import "github.com/ixugo/goddd/pkg/orm"
+import "database/sql/driver"
 
 {{range .Models}}{{ if .IsNotDB }}
 // {{.Name | IfUpperUnderscoreToUpperCamelCase}} domain model
@@ -11,8 +12,13 @@ type {{.Name | IfUpperUnderscoreToUpperCamelCase}} struct{
 }
 
 // Scan implements orm.Scaner.
-func (i *{{.Name}}) Scan(input interface{}) error {
+func (i *{{.Name}}) Scan(input any) error {
 	return orm.JsonUnmarshal(input, i)
+}
+
+// Value support sqlite
+func (i {{.Name}}) Value() (driver.Value, error) {
+	return json.Marshal(i)
 }
 
 {{end}}{{end}}

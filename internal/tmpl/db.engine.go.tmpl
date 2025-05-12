@@ -43,6 +43,7 @@ func (d {{.Name}})Del(ctx context.Context,model *{{.PackageName}}.{{.Name}},opts
 	return orm.DeleteWithContext(ctx,d.db, model, opts...)
 }
 
+// Session 事务组合
 func (d {{.Name}})Session(ctx context.Context,changeFns ...func(*gorm.DB) error) error {
 	return d.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		for _, fn := range changeFns {
@@ -54,6 +55,7 @@ func (d {{.Name}})Session(ctx context.Context,changeFns ...func(*gorm.DB) error)
 	})
 }
 
+// EditWithSession 修改事务
 func (d {{.Name}}) EditWithSession(tx *gorm.DB, model *{{.PackageName}}.{{.Name}}, changeFn func(b *{{.PackageName}}.{{.Name}}) error, opts ...orm.QueryOption) error {
 	return orm.UpdateWithSession(tx, model, changeFn,opts... )
 }

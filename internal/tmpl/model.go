@@ -23,6 +23,7 @@ type Table struct {
 	Name        string
 	Lines       []Line
 	IsNotDB     bool
+	IsStringID  bool // 一般 id 要么 string, 要么 int
 }
 
 type Line struct {
@@ -40,9 +41,10 @@ type Domain struct {
 }
 
 type Models struct {
-	Name    string
-	Ident   []Attribute
-	IsNotDB bool // 顶层结构体默认 true，别人的属性，默认 false
+	Name       string
+	Ident      []Attribute
+	IsNotDB    bool // 顶层结构体默认 true，别人的属性，默认 false
+	IsStringID bool // 一般 id 要么 string, 要么 int
 	// Alias   []string
 }
 
@@ -129,12 +131,15 @@ func ParseFile(path string) (*Domain, error) {
 	return &out, nil
 }
 
+// Start of Selection
 func getStructName(expr ast.Expr) string {
 	switch e := expr.(type) {
 	case *ast.Ident:
 		return e.Name // 返回标识符名称
 	case *ast.SelectorExpr:
 		return e.Sel.Name // 返回选择器的名称
+	case *ast.ArrayType:
+		return getStructName(e.Elt) // 如果是数组，递归获取元素类型的名称
 	}
 	return ""
 }
@@ -151,14 +156,20 @@ func generateModelCode(domain *Domain) (*ModelTmpl, error) {
 	// 首字母小写的，也不是 db
 	for _, model := range domain.Models {
 		for _, filed := range model.Ident {
+			// 跳过内联结构体
 			_, ok := filed.Type.(*ast.StructType)
 			if ok {
 				continue
 			}
 
+			// 如果这个类型是另一个结构体的属性，则不是 db 的映射
 			aname := getStructName(filed.Type)
 			if f, ok := structs[aname]; ok {
 				f.IsNotDB = true
+			}
+
+			if filed.Name == "ID" && getStructName(filed.Type) == "string" {
+				model.IsStringID = true
 			}
 		}
 	}
@@ -196,9 +207,10 @@ func generateModelCode(domain *Domain) (*ModelTmpl, error) {
 			lines = append(lines, line)
 		}
 		otmpl.Models = append(otmpl.Models, Table{
-			Name:    model.Name,
-			Lines:   lines,
-			IsNotDB: model.IsNotDB,
+			Name:       model.Name,
+			Lines:      lines,
+			IsNotDB:    model.IsNotDB,
+			IsStringID: model.IsStringID,
 		})
 	}
 

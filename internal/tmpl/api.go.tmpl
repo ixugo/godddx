@@ -46,12 +46,12 @@ func (a {{$PackageName}}API) find{{.Name}}s(c *gin.Context,in *{{$packageName}}.
 }
 
 func (a {{$PackageName}}API) get{{.Name}}(c *gin.Context,_ *struct{})(any,error){
-	{{$tableName}}ID,_ := strconv.Atoi(c.Param("id"))
+	{{if .IsStringID}}{{$tableName}}ID := c.Param("id"){{else}}{{$tableName}}ID,_ := strconv.Atoi(c.Param("id")){{end}}
 	return a.{{$packageName}}Core.Get{{.Name}}(c.Request.Context(),{{$tableName}}ID)
 }
 
 func (a {{$PackageName}}API) edit{{.Name}}(c *gin.Context,in *{{$packageName}}.Edit{{.Name}}Input)(any,error){
-	{{$tableName}}ID,_ := strconv.Atoi(c.Param("id"))
+	{{if .IsStringID}}{{$tableName}}ID := c.Param("id"){{else}}{{$tableName}}ID,_ := strconv.Atoi(c.Param("id")){{end}}
 	return a.{{$packageName}}Core.Edit{{.Name}}(c.Request.Context(), in,{{$tableName}}ID )
 }
 
@@ -60,7 +60,7 @@ func (a {{$PackageName}}API) add{{.Name}}(c *gin.Context,in *{{$packageName}}.Ad
 }
 
 func (a {{$PackageName}}API) del{{.Name}}(c *gin.Context,_ *struct{})(any,error){
-	{{$tableName}}ID,_ := strconv.Atoi(c.Param("id"))
+	{{if .IsStringID}}{{$tableName}}ID := c.Param("id"){{else}}{{$tableName}}ID,_ := strconv.Atoi(c.Param("id")){{end}}
 	return a.{{$packageName}}Core.Del{{.Name}}(c.Request.Context(), {{$tableName}}ID)
 }
 

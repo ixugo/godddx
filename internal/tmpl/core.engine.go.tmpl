@@ -4,6 +4,7 @@ package {{.PackageName}}
 import "context"
 import "github.com/ixugo/goddd/pkg/orm"
 import "github.com/ixugo/goddd/pkg/web"
+import "github.com/ixugo/goddd/pkg/reason"
 import "github.com/jinzhu/copier"
 
 
@@ -27,7 +28,7 @@ func (c Core) Find{{.Name}}s(ctx context.Context,in *Find{{.Name}}Input) ([]*{{.
 }
 
 // Get{{.Name}} Query a single object
-func (c Core) Get{{.Name}}(ctx context.Context,id int) (*{{.Name}},error) {
+func (c Core) Get{{.Name}}(ctx context.Context,id {{if .IsStringID}}string{{else}}int{{end}}) (*{{.Name}},error) {
 	var out {{.Name}}
 	if err := c.store.{{.Name}}().Get(ctx,&out, orm.Where("id=?",id));err!=nil{
 		if orm.IsErrRecordNotFound(err) {
@@ -51,7 +52,7 @@ func (c Core) Add{{.Name}}(ctx context.Context,in *Add{{.Name}}Input) (*{{.Name}
 }
 
 // Edit{{.Name}} Update object information
-func (c Core) Edit{{.Name}}(ctx context.Context,in *Edit{{.Name}}Input,id int) (*{{.Name}},error) {
+func (c Core) Edit{{.Name}}(ctx context.Context,in *Edit{{.Name}}Input,id {{if .IsStringID}}string{{else}}int{{end}}) (*{{.Name}},error) {
 	var out {{.Name}}
 	if err :=c.store.{{.Name}}().Edit(ctx,&out,func(b *{{.Name}}){
 		if err :=copier.Copy(b, in);err!=nil{
@@ -64,7 +65,7 @@ func (c Core) Edit{{.Name}}(ctx context.Context,in *Edit{{.Name}}Input,id int) (
 }
 
 // Del{{.Name}} Delete object
-func (c Core) Del{{.Name}}(ctx context.Context,id int) (*{{.Name}},error) {
+func (c Core) Del{{.Name}}(ctx context.Context,id {{if .IsStringID}}string{{else}}int{{end}}) (*{{.Name}},error) {
 	var out {{.Name}}
 	if err := c.store.{{.Name}}().Del(ctx, &out, orm.Where("id=?",id));err!=nil{
 		return nil,reason.ErrDB.Withf(`Del err[%s]`, err.Error())
