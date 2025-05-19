@@ -26,7 +26,7 @@
 ```bash
 go install github.com/ixugo/godddx@latest
 go install mvdan.cc/gofumpt@latest
-go install golang.org/x/tools/cmd/goimports
+go install golang.org/x/tools/cmd/goimports@latest
 ```
 
 ## 流程
@@ -34,12 +34,15 @@ go install golang.org/x/tools/cmd/goimports
 1. clone goweb 模板，或初始化项目 go mod init project
 2. 创建 model.go 文件，写入结构体
    ```go
+    // 包名即为生成的模块目录名
+    package user
+
     type User struct {
 	    Name string // 昵称
 	    Age  int64  //  年龄
     }
    ```
-3. 执行 `gowebx -f ./model.go` 即可生成代码
+3. 执行 `godddx -f ./model.go` 即可生成代码
 4. 在项目中调用 registerUser 函数，将生成的代码注册到 gin 路由上。
 
 ## 功能
