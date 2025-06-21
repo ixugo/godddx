@@ -65,3 +65,7 @@ func ToComment(s string) string {
 	}
 	return "// " + s
 }
+
+func ToUpper(s string) string {
+	return strings.ToUpper(s)
+}

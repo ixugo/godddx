@@ -9,7 +9,7 @@ import (
 	"text/template"
 )
 
-//go:embed api.go.tmpl core.go.tmpl db.go.tmpl model.go.tmpl db.engine.go.tmpl core.engine.go.tmpl model.engine.go.tmpl param.engine.go.tmpl db_test.go.tmpl db.engine_test.go.tmpl
+//go:embed *.go.tmpl
 var files embed.FS
 
 type Data struct {
@@ -20,6 +20,16 @@ type Data struct {
 type Name struct {
 	TableName   string
 	PackageName string
+}
+
+var funcMap = template.FuncMap{
+	"ToUpperCamelCase":                  UnderscoreToUpperCamelCase, // 首字母大写驼峰
+	"ToLowerCamelCase":                  UnderscoreToLowerCamelCase, // 首字母小写驼峰
+	"ToUnderscore":                      CamelCaseToUnderscore,      // 蛇形
+	"Plural":                            Plural,
+	"ToComment":                         ToComment,
+	"IfUpperUnderscoreToUpperCamelCase": IfUpperUnderscoreToUpperCamelCase,
+	"ToUpper":                           ToUpper,
 }
 
 func Start(path, module string) error {
@@ -44,6 +54,10 @@ func Start(path, module string) error {
 	if err := handlerDomainDB(domain, out); err != nil {
 		return err
 	}
+	// core/store/usercache/cache.go
+	if err := handlerDomainCache(domain, out); err != nil {
+		return err
+	}
 
 	// api
 	{
@@ -55,16 +69,8 @@ func Start(path, module string) error {
 		apiFile := bytes.NewBuffer(nil)
 		out[fmt.Sprintf("internal/web/api/%s.go", domain.PackageName)] = apiFile
 
-		tpl := template.Must(template.New("abc").Funcs(
-			template.FuncMap{
-				"ToUpperCamelCase":                  UnderscoreToUpperCamelCase, // 首字母大写驼峰
-				"ToLowerCamelCase":                  UnderscoreToLowerCamelCase, // 首字母小写驼峰
-				"ToUnderscore":                      CamelCaseToUnderscore,      // 蛇形
-				"Plural":                            Plural,
-				"ToComment":                         ToComment,
-				"IfUpperUnderscoreToUpperCamelCase": IfUpperUnderscoreToUpperCamelCase,
-			},
-		).ParseFS(files, "api.go.tmpl", "db.go.tmpl"))
+		tpl := template.Must(template.New("abc").Funcs(funcMap).
+			ParseFS(files, "api.go.tmpl", "db.go.tmpl"))
 
 		if err := tpl.ExecuteTemplate(apiFile, "api.go.tmpl", tp); err != nil {
 			panic(err)
@@ -86,16 +92,7 @@ func handlerDomainModel(out *Domain, bufMap map[string]*bytes.Buffer) error {
 	}
 	buf := bytes.NewBuffer(nil)
 
-	tpl := template.Must(template.New("abc").Funcs(
-		template.FuncMap{
-			"ToUpperCamelCase":                  UnderscoreToUpperCamelCase, // 首字母大写驼峰
-			"ToLowerCamelCase":                  UnderscoreToLowerCamelCase, // 首字母小写驼峰
-			"ToUnderscore":                      CamelCaseToUnderscore,      // 蛇形
-			"Plural":                            Plural,
-			"ToComment":                         ToComment,
-			"IfUpperUnderscoreToUpperCamelCase": IfUpperUnderscoreToUpperCamelCase,
-		},
-	).ParseFS(files, "model.go.tmpl", "model.engine.go.tmpl"))
+	tpl := template.Must(template.New("abc").Funcs(funcMap).ParseFS(files, "model.go.tmpl", "model.engine.go.tmpl"))
 
 	if err := tpl.ExecuteTemplate(buf, "model.go.tmpl", tp); err != nil {
 		panic(err)
@@ -125,16 +122,7 @@ func handlerDomainCore(out *Domain, bufMap map[string]*bytes.Buffer) error {
 	}
 	buf := bytes.NewBuffer(nil)
 
-	tpl := template.Must(template.New("abc").Funcs(
-		template.FuncMap{
-			"ToUpperCamelCase":                  UnderscoreToUpperCamelCase, // 首字母大写驼峰
-			"ToLowerCamelCase":                  UnderscoreToLowerCamelCase, // 首字母小写驼峰
-			"ToUnderscore":                      CamelCaseToUnderscore,      // 蛇形
-			"Plural":                            Plural,
-			"ToComment":                         ToComment,
-			"IfUpperUnderscoreToUpperCamelCase": IfUpperUnderscoreToUpperCamelCase,
-		},
-	).ParseFS(files, "core.go.tmpl", "core.engine.go.tmpl", "param.engine.go.tmpl"))
+	tpl := template.Must(template.New("abc").Funcs(funcMap).ParseFS(files, "core.go.tmpl", "core.engine.go.tmpl", "param.engine.go.tmpl"))
 
 	if err := tpl.ExecuteTemplate(buf, "core.go.tmpl", tp); err != nil {
 		panic(err)
@@ -178,16 +166,7 @@ func handlerDomainDB(out *Domain, bufMap map[string]*bytes.Buffer) error {
 	}
 	buf := bytes.NewBuffer(nil)
 
-	tpl := template.Must(template.New("abc").Funcs(
-		template.FuncMap{
-			"ToUpperCamelCase":                  UnderscoreToUpperCamelCase, // 首字母大写驼峰
-			"ToLowerCamelCase":                  UnderscoreToLowerCamelCase, // 首字母小写驼峰
-			"ToUnderscore":                      CamelCaseToUnderscore,      // 蛇形
-			"Plural":                            Plural,
-			"ToComment":                         ToComment,
-			"IfUpperUnderscoreToUpperCamelCase": IfUpperUnderscoreToUpperCamelCase,
-		},
-	).ParseFS(files, "db.engine.go.tmpl", "db.go.tmpl", "db_test.go.tmpl", "db.engine_test.go.tmpl"))
+	tpl := template.Must(template.New("abc").Funcs(funcMap).ParseFS(files, "db.engine.go.tmpl", "db.go.tmpl", "db_test.go.tmpl", "db.engine_test.go.tmpl"))
 
 	if err := tpl.ExecuteTemplate(buf, "db.go.tmpl", tp); err != nil {
 		panic(err)
@@ -221,6 +200,36 @@ func handlerDomainDB(out *Domain, bufMap map[string]*bytes.Buffer) error {
 			}
 			bufMap[fmt.Sprintf("internal/core/%s/store/%sdb/%s_test.go", out.PackageName, out.PackageName, CamelCaseToUnderscore(v.Name))] = dbengineBuf
 		}
+	}
+
+	return nil
+}
+
+func handlerDomainCache(out *Domain, bufMap map[string]*bytes.Buffer) error {
+	tp, err := generateModelCode(out)
+	if err != nil {
+		return err
+	}
+	buf := bytes.NewBuffer(nil)
+
+	tpl := template.Must(template.New("abc").Funcs(funcMap).ParseFS(files, "cache.go.tmpl", "cache.engine.go.tmpl"))
+
+	if err := tpl.ExecuteTemplate(buf, "cache.go.tmpl", tp); err != nil {
+		panic(err)
+	}
+	bufMap[fmt.Sprintf("internal/core/%s/store/%scache/cache.go", out.PackageName, out.PackageName)] = buf
+
+	for _, v := range tp.Models {
+		if v.IsNotDB {
+			continue
+		}
+
+		v.PackageName = out.PackageName
+		buf := bytes.NewBuffer(nil)
+		if err := tpl.ExecuteTemplate(buf, "cache.engine.go.tmpl", v); err != nil {
+			panic(err)
+		}
+		bufMap[fmt.Sprintf("internal/core/%s/store/%scache/%s.go", out.PackageName, out.PackageName, CamelCaseToUnderscore(v.Name))] = buf
 	}
 
 	return nil
