@@ -33,6 +33,13 @@ func (c *{{.Name}})Find(ctx context.Context, bs *[]*{{.PackageName}}.{{.Name}},p
 // 注意: 若想走缓存，则 model 的 id 必传
 // 条件查询无法缓存，此缓存仅为 ID 查询生效。
 func (c *{{.Name}})Get(ctx context.Context,model *{{.PackageName}}.{{.Name}},opts...orm.QueryOption) error {
+	{{if .IsStringID}}
+	if model.ID == "" {
+		panic("使用缓存时, ID 不允许为零值")
+	}{{else}}
+	if model.ID <= 0 {
+		panic("使用缓存时, ID 不允许为零值")
+	}{{end}}
 	if err := c.{{$tableName}}.Get(ctx, c.cacheKey(model.ID ), model);err == nil {
 		return nil
 	}

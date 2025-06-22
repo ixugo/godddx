@@ -19,8 +19,10 @@ type {{.Name}}Storer interface{
 
 // Find{{.Name}} Paginated search
 func (c Core) Find{{.Name}}s(ctx context.Context,in *Find{{.Name}}Input) ([]*{{.Name}},int64,error) {
+	query := orm.NewQuery(1).OrderBy("created_at DESC")
+
 	items := make([]*{{.Name}},0, in.Limit())
-	total,err := c.store.{{.Name}}().Find(ctx,&items,in)
+	total,err := c.store.{{.Name}}().Find(ctx,&items,in,query.Encode()...)
 	if err != nil {
 		return nil,0,reason.ErrDB.Withf(`Find err[%s]`, err.Error())
 	}

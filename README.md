@@ -38,6 +38,12 @@ go install golang.org/x/tools/cmd/goimports@latest
     package user
 
     type User struct {
+        // 按照 gorm 的建议，应当包含  CreatedAt, UpdatedAt
+        // goddx 生成的列表查询也会依赖 CreatedAt 查询排序
+        ID int
+        CreatedAt orm.Time
+        UpdatedAt orm.Time
+
 	    Name string // 昵称
 	    Age  int64  //  年龄
     }
@@ -47,9 +53,10 @@ go install golang.org/x/tools/cmd/goimports@latest
 
 ## 功能
 
-- [x] 生成 5 项常用 curd (增删改查,分页搜索)
-- [ ] 生成 5 项常用 curd 的测试函数
-- [ ] 生成 5 项常用 curd 的接口文档
+- [x] 生成 5 项常用 CRUD (增删改查,分页搜索)
+- [x] 生成 5 项常用 CRUD 缓存
+- [ ] 生成 5 项常用 CRUD 的测试函数
+- [ ] 生成 5 项常用 CRUD 的接口文档
 - [ ] 支持分页查询中，前端传递排序方式
 - [ ] 支持分页查询中，前端传递条件
 - [ ] 生成 5 项常用的 redis 缓存代码

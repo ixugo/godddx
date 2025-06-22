@@ -18,7 +18,11 @@ type {{$PackageName}}API struct{
 }
 
 func New{{$PackageName}}API(db *gorm.DB) {{$PackageName}}API {
-	core := {{$packageName}}.NewCore({{$packageName}}db.NewDB(db).AutoMigrate(orm.EnabledAutoMigrate))
+	var store {{$packageName}}.Storer
+	store = {{$packageName}}db.NewDB(db).AutoMigrate(orm.EnabledAutoMigrate)
+	// 如果需要缓存，可以取消注释
+	// store = {{$packageName}}cache.NewCache(store,conc.NewTTLCache(time.Hour))
+	core := {{$packageName}}.NewCore(store)
 	return {{$PackageName}}API{ {{$packageName}}Core: core}
 }
 

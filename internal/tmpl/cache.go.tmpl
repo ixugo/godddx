@@ -11,24 +11,17 @@ import (
 
 var _ {{.PackageName}}.Storer = (*Cache)(nil)
 
-type Cacher interface{
-	Set(context.Context, string,any)
-	Del(context.Context, string)
-	Get(context.Context, string,any) error
-	SetNX(context.Context, string,any)
-}
-
-func NewCache(store {{.PackageName}}.Storer) *Cache {
+func NewCache(store {{.PackageName}}.Storer, cache  conc.Cacher) *Cache {
 	return &Cache{
 		store: store,
-		{{range .Models}}{{ if .IsNotDB }}{{else}}{{.Name | ToLowerCamelCase}}: conc.NewTTLCache(time.Hour),
+		{{range .Models}}{{ if .IsNotDB }}{{else}}{{.Name | ToLowerCamelCase}}: cache,
 {{end}}{{end}}
 	}
 }
 
 type Cache struct{
 	store {{.PackageName}}.Storer
-{{range .Models}}{{ if .IsNotDB }}{{else}}{{.Name | ToLowerCamelCase}} Cacher
+{{range .Models}}{{ if .IsNotDB }}{{else}}{{.Name | ToLowerCamelCase}} conc.Cacher
 {{end}}{{end}}
 }
 
