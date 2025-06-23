@@ -66,3 +66,9 @@ go install golang.org/x/tools/cmd/goimports@latest
 > 为什么不读数据库生成代码?
 
 平时在表中用 json 类型较多，读数据库没办法生成 json 结构体。
+
+> 模型中定义了函数 CacheKey 做什么用的?
+
+生成的缓存代码，必须知道键，才能到值，如果键有很多个，则删除的时候会很麻烦。
+CacheKey 方法用来确定这个模型的唯一标识，默认应该是 ID，但如果不是通过 id 频繁查询，可以自行修改成其它键
+例如 goddd 项目中的 token 实现，就是以 hash 为键。

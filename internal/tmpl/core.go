@@ -30,6 +30,7 @@ var funcMap = template.FuncMap{
 	"ToComment":                         ToComment,
 	"IfUpperUnderscoreToUpperCamelCase": IfUpperUnderscoreToUpperCamelCase,
 	"ToUpper":                           ToUpper,
+	"FirstLetter":                       FirstLetter,
 }
 
 func Start(path, module string) error {

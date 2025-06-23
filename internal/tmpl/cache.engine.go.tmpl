@@ -19,8 +19,8 @@ var _ {{.PackageName}}.{{.Name}}Storer = (*{{.Name}})(nil)
 
 type {{.Name}} Cache
 
-func(c *{{.Name}}) cacheKey(id any) string {
-	return fmt.Sprintf("{{.Name | ToUpper}}:%v", id)
+func(c *{{.Name}}) cacheKey(key any) string {
+	return fmt.Sprintf("{{.Name | ToUpper}}:%v", key)
 }
 
 
@@ -30,23 +30,20 @@ func (c *{{.Name}})Find(ctx context.Context, bs *[]*{{.PackageName}}.{{.Name}},p
 }
 
 // Get implements {{.PackageName}}.{{.Name}}Storer.
-// 注意: 若想走缓存，则 model 的 id 必传
-// 条件查询无法缓存，此缓存仅为 ID 查询生效。
+// 注意: 若想走缓存，则 model 的 CacheKey 必须实现且必须存在值
+// 当 CacheKey 为 id 且出现 orm.Where("id=?",id) 时，查询条件会变成
+// SELECT * FROM `users` WHERE `id` = 1 AND `users`.`id` = 1
+// 两个值一样则不会受到影响
 func (c *{{.Name}})Get(ctx context.Context,model *{{.PackageName}}.{{.Name}},opts...orm.QueryOption) error {
-	{{if .IsStringID}}
-	if model.ID == "" {
-		panic("使用缓存时, ID 不允许为零值")
-	}{{else}}
-	if model.ID <= 0 {
-		panic("使用缓存时, ID 不允许为零值")
-	}{{end}}
-	if err := c.{{$tableName}}.Get(ctx, c.cacheKey(model.ID ), model);err == nil {
-		return nil
+	if model.CacheKey() != "" {
+		if err := c.{{$tableName}}.Get(ctx, c.cacheKey(model.CacheKey() ), model);err == nil {
+			return nil
+		}
 	}
 	if err := c.store.{{.Name}}().Get(ctx,model,opts...);err!=nil{
 		return err
 	}
-	c.{{$tableName}}.SetNX(ctx,c.cacheKey(model.ID ),  model)
+	c.{{$tableName}}.SetNX(ctx,c.cacheKey(model.CacheKey() ),  model)
 	return nil
 }
 
@@ -55,7 +52,7 @@ func (c *{{.Name}})Add(ctx context.Context,model *{{.PackageName}}.{{.Name}}) er
 	if err := c.store.{{.Name}}().Add(ctx, model);err!=nil{
 		return err
 	}
-	c.{{$tableName}}.Set(ctx,c.cacheKey(model.ID ),  model)
+	c.{{$tableName}}.Set(ctx,c.cacheKey(model.CacheKey() ),  model)
 	return nil
 }
 
@@ -64,7 +61,7 @@ func (c *{{.Name}})Edit(ctx context.Context,model *{{.PackageName}}.{{.Name}},ch
 	if err := c.store.{{.Name}}().Edit(ctx, model,changeFn, opts...);err!=nil{
 		return err
 	}
-	c.{{$tableName}}.Set(ctx, c.cacheKey(model.ID ),  model)
+	c.{{$tableName}}.Set(ctx, c.cacheKey(model.CacheKey() ),  model)
 	return nil
 }
 
@@ -73,7 +70,7 @@ func (c *{{.Name}})Del(ctx context.Context,model *{{.PackageName}}.{{.Name}},opt
 	if err := c.store.{{.Name}}().Del(ctx, model, opts...);err!=nil{
 		return err
 	}
-	c.{{$tableName}}.Del(ctx,c.cacheKey(model.ID ))
+	c.{{$tableName}}.Del(ctx,c.cacheKey(model.CacheKey() ))
 	return nil
 }
 
@@ -88,6 +85,6 @@ func (c *{{.Name}}) EditWithSession(tx *gorm.DB, model *{{.PackageName}}.{{.Name
 //	if err := c.store.{{.Name}}().EditWithSession(ctx,model, changeFn,opts...);err!=nil{
 // return err
 //	}
-//	c.{{$tableName}}.Set(ctx, c.cacheKey(model.ID ),  model)
+//	c.{{$tableName}}.Set(ctx, c.cacheKey(model.CacheKey() ),  model)
 	return nil
 }

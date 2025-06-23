@@ -69,3 +69,11 @@ func ToComment(s string) string {
 func ToUpper(s string) string {
 	return strings.ToUpper(s)
 }
+
+// FirstLetter 首字母小写
+func FirstLetter(s string) string {
+	if len(s) == 0 {
+		return ""
+	}
+	return strings.ToLower(s[:1])
+}

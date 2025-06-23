@@ -31,8 +31,9 @@ func (c Core) Find{{.Name}}s(ctx context.Context,in *Find{{.Name}}Input) ([]*{{.
 
 // Get{{.Name}} Query a single object
 func (c Core) Get{{.Name}}(ctx context.Context,id {{if .IsStringID}}string{{else}}int{{end}}) (*{{.Name}},error) {
-	var out {{.Name}}
-	if err := c.store.{{.Name}}().Get(ctx,&out, orm.Where("id=?",id));err!=nil{
+	out := {{.Name}}{ ID: id }
+	// orm.Where("id=?",id) 和 为模型赋值 id 选择一种方式即可
+	if err := c.store.{{.Name}}().Get(ctx,&out);err!=nil{
 		if orm.IsErrRecordNotFound(err) {
 			return nil,reason.ErrNotFound.Withf(`Get err[%s]`, err.Error())
 		}
