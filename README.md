@@ -54,12 +54,10 @@ go install golang.org/x/tools/cmd/goimports@latest
 ## 功能
 
 - [x] 生成 5 项常用 CRUD (增删改查,分页搜索)
-- [x] 生成 5 项常用 CRUD 缓存
+- [x] 生成 5 项常用 CRUD 缓存(支持 redis)
 - [ ] 生成 5 项常用 CRUD 的测试函数
 - [ ] 生成 5 项常用 CRUD 的接口文档
 - [ ] 支持分页查询中，前端传递排序方式
-- [ ] 支持分页查询中，前端传递条件
-- [ ] 生成 5 项常用的 redis 缓存代码
 
 ## 问题
 
