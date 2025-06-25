@@ -13,20 +13,29 @@ import (
 
 {{ $PackageName := .PackageName | ToUpperCamelCase }}
 
+// {{$PackageName}}API 为 http 提供业务方法
 type {{$PackageName}}API struct{
 	{{.PackageName}}Core {{.PackageName}}.Core
 }
 
-func New{{$PackageName}}API(db *gorm.DB) {{$PackageName}}API {
+func New{{$PackageName}}Core(db *gorm.DB) {{.PackageName}}.Core {
 	var store {{$packageName}}.Storer
 	store = {{$packageName}}db.NewDB(db).AutoMigrate(orm.EnabledAutoMigrate)
 	// 如果需要缓存，可以取消注释
 	// store = {{$packageName}}cache.NewCache(store,conc.NewTTLCache(time.Hour))
-	core := {{$packageName}}.NewCore(store)
+	return {{$packageName}}.NewCore(store)
+}
+
+func New{{$PackageName}}API(core {{.PackageName}}.Core) {{$PackageName}}API {
 	return {{$PackageName}}API{ {{$packageName}}Core: core}
 }
 
-func register{{$PackageName}}(g gin.IRouter,api {{$PackageName}}API,handler...gin.HandlerFunc) {
+// New{{$PackageName}}APIFromDB 如果已经初始化，可以考虑 New{{$PackageName}}API
+func New{{$PackageName}}APIFromDB(db *gorm.DB) {{$PackageName}}API {
+	return New{{$PackageName}}API(New{{$PackageName}}Core(db))
+}
+
+func Register{{$PackageName}}(g gin.IRouter,api {{$PackageName}}API,handler...gin.HandlerFunc) {
 	{{range .Models}}{{if .IsNotDB}}{{else}}
 	{
 		group := g.Group("/{{.Name|ToUnderscore|Plural}}", handler...)
