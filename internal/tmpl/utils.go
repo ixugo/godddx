@@ -37,16 +37,16 @@ func UnderscoreToLowerCamelCase(s string) string {
 
 // 下划线
 func CamelCaseToUnderscore(s string) string {
-	var output []rune
-	for i, r := range s {
-		if i == 0 {
-			output = append(output, unicode.ToLower(r))
-			continue
-		}
-		if unicode.IsUpper(r) && !unicode.IsUpper(rune(s[i-1])) {
+	output := make([]rune, 0, len(s))
+	var lastIsLower bool
+	for _, r := range s {
+		if lastIsLower && unicode.IsUpper(r) {
 			output = append(output, '_')
 		}
 		output = append(output, unicode.ToLower(r))
+		if !unicode.IsDigit(r) {
+			lastIsLower = unicode.IsLower(r)
+		}
 	}
 	return string(output)
 }

@@ -42,7 +42,7 @@ func TestParseFile(t *testing.T) {
 }
 
 func TestCamelCaseToUnderscore(t *testing.T) {
-	args := []string{"ParentID", "ParentIDiDDC"}
+	args := []string{"ParentID", "ParentIDiDDC", "P2P", "P2Ps"}
 	for _, arg := range args {
 
 		s := CamelCaseToUnderscore(arg)
