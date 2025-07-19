@@ -6,6 +6,9 @@ import (
 	"log"
 	"testing"
 	"text/template"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func TestParseFile(t *testing.T) {
@@ -47,6 +50,8 @@ func TestCamelCaseToUnderscore(t *testing.T) {
 
 		s := CamelCaseToUnderscore(arg)
 		fmt.Println(s)
+
+		fmt.Println(cases.Upper(language.English).String(arg))
 
 	}
 }
