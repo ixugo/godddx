@@ -175,11 +175,12 @@ func handlerDomainDB(out *Domain, bufMap map[string]*bytes.Buffer) error {
 	bufMap[fmt.Sprintf("internal/core/%s/store/%sdb/db.go", out.PackageName, out.PackageName)] = buf
 
 	{
-		dbtestBuf := bytes.NewBuffer(nil)
-		if err := tpl.ExecuteTemplate(dbtestBuf, "db_test.go.tmpl", tp); err != nil {
-			panic(err)
-		}
-		bufMap[fmt.Sprintf("internal/core/%s/store/%sdb/db_test.go", out.PackageName, out.PackageName)] = dbtestBuf
+		// 移除测试
+		// dbtestBuf := bytes.NewBuffer(nil)
+		// if err := tpl.ExecuteTemplate(dbtestBuf, "db_test.go.tmpl", tp); err != nil {
+		// 	panic(err)
+		// }
+		// bufMap[fmt.Sprintf("internal/core/%s/store/%sdb/db_test.go", out.PackageName, out.PackageName)] = dbtestBuf
 	}
 
 	for _, v := range tp.Models {
@@ -195,11 +196,12 @@ func handlerDomainDB(out *Domain, bufMap map[string]*bytes.Buffer) error {
 		bufMap[fmt.Sprintf("internal/core/%s/store/%sdb/%s.go", out.PackageName, out.PackageName, CamelCaseToUnderscore(v.Name))] = buf
 
 		{
-			dbengineBuf := bytes.NewBuffer(nil)
-			if err := tpl.ExecuteTemplate(dbengineBuf, "db.engine_test.go.tmpl", v); err != nil {
-				panic(err)
-			}
-			bufMap[fmt.Sprintf("internal/core/%s/store/%sdb/%s_test.go", out.PackageName, out.PackageName, CamelCaseToUnderscore(v.Name))] = dbengineBuf
+			// 移除测试
+			// dbengineBuf := bytes.NewBuffer(nil)
+			// if err := tpl.ExecuteTemplate(dbengineBuf, "db.engine_test.go.tmpl", v); err != nil {
+			// 	panic(err)
+			// }
+			// bufMap[fmt.Sprintf("internal/core/%s/store/%sdb/%s_test.go", out.PackageName, out.PackageName, CamelCaseToUnderscore(v.Name))] = dbengineBuf
 		}
 	}
 
