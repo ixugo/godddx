@@ -51,6 +51,23 @@ go install golang.org/x/tools/cmd/goimports@latest
 3. 执行 `godddx -f ./model.go` 即可生成代码
 4. 在项目中调用 registerUser 函数，将生成的代码注册到 gin 路由上。
 
+## 使用技巧
+1. 定义结构体时，想使用字符串 id，但是 uuid 太长了，可采用以下方案
+```go
+import "github.com/ixugo/goddd/domain/uniqueid"
+type User struct{
+    ID uniqueid.Core
+}
+```
+此时生成工具会自动处理，添加接口会自动生成随机 6 位数 id。
+
+需要修改长度，可以全局搜索 `NewUniqueID` 函数，其第二个入参即为长度，也可以主动调用函数 `uni.UniqueIDWithCustomLen()` 指定长度。
+
+2. 当在 goddd 的环境中的项目根目录使用此工具时，会自动完成依赖注入
+更新 `internal/web/api/provider.go`, `internal/web/api/api.go` 两个文件
+
+3. 结构体的属性中必须存在 ID，字符串或整型，如果不符合这个条件，生成后的代码需要微调
+
 ## 功能
 
 - [x] 生成 5 项常用 CRUD (增删改查,分页搜索)

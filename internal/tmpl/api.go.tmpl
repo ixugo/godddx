@@ -18,12 +18,12 @@ type {{$PackageName}}API struct{
 	{{.PackageName}}Core {{.PackageName}}.Core
 }
 
-func New{{$PackageName}}Core(db *gorm.DB) {{.PackageName}}.Core {
+func New{{$PackageName}}Core(db *gorm.DB, {{ if .ExistsUniqueID }}uni uniqueid.Core{{ end }}) {{.PackageName}}.Core {
 	var store {{$packageName}}.Storer
 	store = {{$packageName}}db.NewDB(db).AutoMigrate(orm.EnabledAutoMigrate)
 	// 如果需要缓存，可以取消注释
 	// store = {{$packageName}}cache.NewCache(store,conc.NewTTLCache(time.Hour))
-	return {{$packageName}}.NewCore(store)
+	return {{$packageName}}.NewCore(store, {{ if .ExistsUniqueID }}uni{{ end }} )
 }
 
 func New{{$PackageName}}API(core {{.PackageName}}.Core) {{$PackageName}}API {

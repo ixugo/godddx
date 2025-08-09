@@ -16,14 +16,17 @@ type ModelTmpl struct {
 	PackageName string
 	ModuleName  string
 	Models      []Table
+
+	ExistsUniqueID bool
 }
 
 type Table struct {
-	PackageName string
-	Name        string
-	Lines       []Line
-	IsNotDB     bool
-	IsStringID  bool // 一般 id 要么 string, 要么 int
+	PackageName    string
+	Name           string
+	Lines          []Line
+	IsNotDB        bool
+	IsStringID     bool // 一般 id 要么 string, 要么 int
+	ExistsUniqueID bool
 }
 
 type Line struct {
@@ -38,6 +41,8 @@ type Domain struct {
 	ModuleName  string
 	PackageName string
 	Models      []*Models
+
+	ExistsUniqueID bool
 }
 
 type Models struct {
@@ -46,6 +51,8 @@ type Models struct {
 	IsNotDB    bool // 顶层结构体默认 true，别人的属性，默认 false
 	IsStringID bool // 一般 id 要么 string, 要么 int
 	// Alias   []string
+
+	ExistsUniqueID bool // id 是否是 uniqueid.Core 类型
 }
 
 type Attribute struct {
@@ -144,6 +151,23 @@ func getStructName(expr ast.Expr) string {
 	return ""
 }
 
+func getFullStructName(expr ast.Expr) string {
+	switch e := expr.(type) {
+	case *ast.Ident:
+		return e.Name
+	case *ast.SelectorExpr:
+		// 处理包名.结构体名
+		pkgIdent, ok := e.X.(*ast.Ident)
+		if ok {
+			return pkgIdent.Name + "." + e.Sel.Name
+		}
+		return e.Sel.Name
+	case *ast.ArrayType:
+		return getFullStructName(e.Elt)
+	}
+	return ""
+}
+
 func generateModelCode(domain *Domain) (*ModelTmpl, error) {
 	// 提取所有的结构体名
 	// 判断该结构体名是否是别人的属性类型
@@ -168,15 +192,25 @@ func generateModelCode(domain *Domain) (*ModelTmpl, error) {
 				f.IsNotDB = true
 			}
 
-			if filed.Name == "ID" && getStructName(filed.Type) == "string" {
-				model.IsStringID = true
+			if filed.Name == "ID" {
+				if getStructName(filed.Type) == "string" {
+					model.IsStringID = true
+				}
+
+				if getFullStructName(filed.Type) == "uniqueid.Core" {
+					model.ExistsUniqueID = true
+					model.IsStringID = true
+					domain.ExistsUniqueID = true
+
+				}
 			}
 		}
 	}
 
 	otmpl := ModelTmpl{
-		PackageName: domain.PackageName,
-		ModuleName:  domain.ModuleName,
+		PackageName:    domain.PackageName,
+		ModuleName:     domain.ModuleName,
+		ExistsUniqueID: domain.ExistsUniqueID,
 	}
 
 	for _, model := range domain.Models {
@@ -207,10 +241,11 @@ func generateModelCode(domain *Domain) (*ModelTmpl, error) {
 			lines = append(lines, line)
 		}
 		otmpl.Models = append(otmpl.Models, Table{
-			Name:       model.Name,
-			Lines:      lines,
-			IsNotDB:    model.IsNotDB,
-			IsStringID: model.IsStringID,
+			Name:           model.Name,
+			Lines:          lines,
+			IsNotDB:        model.IsNotDB,
+			IsStringID:     model.IsStringID,
+			ExistsUniqueID: model.ExistsUniqueID,
 		})
 	}
 
@@ -247,6 +282,12 @@ func generateTagGormDefaultValue(expr ast.Expr) string {
 	case *ast.StructType:
 		return "'{}'"
 	case *ast.SelectorExpr:
+		// 处理包名.结构体名
+		pkgIdent, ok := e.X.(*ast.Ident)
+		if ok && pkgIdent.Name+"."+e.Sel.Name == "uniqueid.Core" {
+			return "string"
+		}
+
 		// 处理选择器（例如，time.Time）
 		if e.X != nil && e.Sel != nil {
 			return "CURRENT_TIMESTAMP" // 假设时间类型
@@ -258,21 +299,26 @@ func generateTagGormDefaultValue(expr ast.Expr) string {
 
 // 辅助函数，用于将字段类型转换为字符串
 func fieldTypeToString(expr ast.Expr) string {
-	switch t := expr.(type) {
+	switch e := expr.(type) {
 	case *ast.Ident:
-		return t.Name
+		return e.Name
 	case *ast.SelectorExpr:
 		// 处理带有包名的类型，如 time.Time
-		return fmt.Sprintf("%s.%s", fieldTypeToString(t.X), t.Sel.Name)
+		pkgIdent, ok := e.X.(*ast.Ident)
+		if ok && pkgIdent.Name+"."+e.Sel.Name == "uniqueid.Core" {
+			return "string"
+		}
+
+		return fmt.Sprintf("%s.%s", fieldTypeToString(e.X), e.Sel.Name)
 	case *ast.ArrayType:
 		// 处理数组类型
-		return "[]" + fieldTypeToString(t.Elt)
+		return "[]" + fieldTypeToString(e.Elt)
 	case *ast.StarExpr:
 		// 处理指针类型
-		return "*" + fieldTypeToString(t.X)
+		return "*" + fieldTypeToString(e.X)
 	case *ast.MapType:
 		// 处理 map 类型
-		return fmt.Sprintf("map[%s]%s", fieldTypeToString(t.Key), fieldTypeToString(t.Value))
+		return fmt.Sprintf("map[%s]%s", fieldTypeToString(e.Key), fieldTypeToString(e.Value))
 	case *ast.FuncType:
 		// 处理函数类型
 		return "func(...)"

@@ -43,6 +43,7 @@ var (
 	file    = flag.String("f", "", "领域模型文件，多个用逗号分隔")
 	module  = flag.String("m", "", "模块名")
 	version = flag.Bool("v", false, "版本号")
+	_       = flag.String("i", "", "1. 结构体想使用字符串 ID, 可考虑 ID uniqueid.Core, 自动生成全局唯一 ID")
 )
 
 func main() {
@@ -54,7 +55,7 @@ func main() {
 	flag.Parse()
 
 	if *version {
-		fmt.Println("github.com/ixugo/godddx v0.4.0")
+		fmt.Println("github.com/ixugo/godddx v1.2.11")
 		return
 	}
 

@@ -88,6 +88,13 @@ func Start(path, module string) error {
 
 	// 填充 provider.go 依赖注入
 	if FileExists("", "provider.go") {
+		const uniqueidName = "NewUniqueID"
+		if domain.ExistsUniqueID {
+			if _, err := AppendProviderSetArg("", uniqueidName); err != nil {
+				return fmt.Errorf("缺少 NewUniqueID, 请手动更新 provider.go 依赖注入, %w", err)
+			}
+		}
+
 		apiName := fmt.Sprintf("New%sAPI", UnderscoreToUpperCamelCase(domain.PackageName))
 		coreName := fmt.Sprintf("New%sCore", UnderscoreToUpperCamelCase(domain.PackageName))
 		if _, err := AppendProviderSetArg("", coreName, apiName); err != nil {
@@ -99,7 +106,7 @@ func Start(path, module string) error {
 			return fmt.Errorf("请手动更新 provider.go 依赖注入, %w", err)
 		}
 		if err := MakeWire(); err != nil {
-			fmt.Println("⚠️ 请手动执行 make wire, err:", err)
+			fmt.Println("请手动执行 make wire, err:", err)
 		}
 
 		// 填充 api 路由
