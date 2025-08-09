@@ -80,9 +80,38 @@ func Start(path, module string) error {
 		// 写到硬盘
 		for k, v := range out {
 			_ = os.MkdirAll(filepath.Dir(k), os.ModePerm)
-			os.WriteFile(k, v.Bytes(), os.ModePerm)
+			if err := os.WriteFile(k, v.Bytes(), os.ModePerm); err != nil {
+				fmt.Println("⚠️ WriteFile err:", err)
+			}
 		}
 	}
+
+	// 填充 provider.go 依赖注入
+	if FileExists("", "provider.go") {
+		apiName := fmt.Sprintf("New%sAPI", UnderscoreToUpperCamelCase(domain.PackageName))
+		coreName := fmt.Sprintf("New%sCore", UnderscoreToUpperCamelCase(domain.PackageName))
+		if _, err := AppendProviderSetArg("", coreName, apiName); err != nil {
+			return fmt.Errorf("请手动更新 provider.go 依赖注入, %w", err)
+		}
+
+		fieldName := fmt.Sprintf("%sAPI", UnderscoreToUpperCamelCase(domain.PackageName))
+		if _, err := AppendUsecaseField("", fmt.Sprintf("%s %s", fieldName, fieldName)); err != nil {
+			return fmt.Errorf("请手动更新 provider.go 依赖注入, %w", err)
+		}
+		if err := MakeWire(); err != nil {
+			fmt.Println("⚠️ 请手动执行 make wire, err:", err)
+		}
+
+		// 填充 api 路由
+		if FileExists("", "api.go") {
+			funcName := fmt.Sprintf("Register%s", UnderscoreToUpperCamelCase(domain.PackageName))
+			line := fmt.Sprintf("%s(r, uc.%s)", funcName, fieldName)
+			if _, err := AppendLineToSetupRouter("", funcName, line); err != nil {
+				return fmt.Errorf("请手动更新 api.go 路由, %w", err)
+			}
+		}
+	}
+
 	return nil
 }
 

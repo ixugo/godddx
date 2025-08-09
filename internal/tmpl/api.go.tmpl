@@ -31,9 +31,9 @@ func New{{$PackageName}}API(core {{.PackageName}}.Core) {{$PackageName}}API {
 }
 
 // New{{$PackageName}}APIFromDB 如果已经初始化，可以考虑 New{{$PackageName}}API
-func New{{$PackageName}}APIFromDB(db *gorm.DB) {{$PackageName}}API {
-	return New{{$PackageName}}API(New{{$PackageName}}Core(db))
-}
+// func New{{$PackageName}}APIFromDB(db *gorm.DB) {{$PackageName}}API {
+// 	return New{{$PackageName}}API(New{{$PackageName}}Core(db))
+// }
 
 func Register{{$PackageName}}(g gin.IRouter,api {{$PackageName}}API,handler...gin.HandlerFunc) {
 	{{range .Models}}{{if .IsNotDB}}{{else}}

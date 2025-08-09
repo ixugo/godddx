@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"log/slog"
 	"os"
 	"os/exec"
 	"strings"
@@ -47,10 +46,15 @@ var (
 )
 
 func main() {
+	// tmpl.AppendProviderSetArg(".", "NewTmplAPIFromDB")
+	// tmpl.AppendUsecaseField(".", "TmplAPI TmplAPI")
+	// tmpl.AppendLineToSetupRouter(".", "registerTmpl(r, uc.TmplAPI)")
+	// return
+
 	flag.Parse()
 
 	if *version {
-		fmt.Println("github.com/ixugo/godddx v0.3.2")
+		fmt.Println("github.com/ixugo/godddx v0.4.0")
 		return
 	}
 
@@ -64,7 +68,7 @@ func main() {
 	}
 	files := strings.Split(*file, ",")
 	if len(files) == 0 {
-		fmt.Println("未指定领域模型文件")
+		fmt.Println("⚠️ 未指定领域模型文件")
 		return
 	}
 	for _, file := range files {
@@ -72,16 +76,16 @@ func main() {
 			continue
 		}
 		if err := tmpl.Start(file, moduleName); err != nil {
-			slog.Error(err.Error())
+			fmt.Println("⚠️  err:", err)
 		}
 	}
 
 	if err := CommandContext("goimports", "-w", "."); err != nil {
-		// fmt.Println(err)
+		fmt.Println("⚠️  err:", err)
 	}
 
 	if err := CommandContext("gofumpt", "-l", "-w", "."); err != nil {
-		// fmt.Println(err)
+		fmt.Println("⚠️  err:", err)
 	}
 }
 
