@@ -24,7 +24,7 @@ func (c Core) Find{{.Name}}s(ctx context.Context,in *Find{{.Name}}Input) ([]*{{.
 	items := make([]*{{.Name}},0, in.Limit())
 	total,err := c.store.{{.Name}}().Find(ctx,&items,in,query.Encode()...)
 	if err != nil {
-		return nil,0,reason.ErrDB.Withf(`Find err[%s]`, err.Error())
+		return nil,0,reason.ErrDB.Withf(`Find in[%+v] err[%s]`, in, err.Error())
 	}
 	return items,total,nil
 }
@@ -35,9 +35,9 @@ func (c Core) Get{{.Name}}(ctx context.Context,id {{if .IsStringID}}string{{else
 	out := {{.Name}}{ ID: id }
 	if err := c.store.{{.Name}}().Get(ctx,&out, orm.Where("id=?",id));err!=nil{
 		if orm.IsErrRecordNotFound(err) {
-			return nil,reason.ErrNotFound.Withf(`Get err[%s]`, err.Error())
+			return nil,reason.ErrNotFound.Withf(`Get id[%v] err[%s]`, id,err.Error())
 		}
-		return nil,reason.ErrDB.Withf(`Get err[%s]`, err.Error())
+		return nil,reason.ErrDB.Withf(`Get id[%v] err[%s]`, id,err.Error())
 	}
 	return &out,nil
 }
@@ -46,7 +46,7 @@ func (c Core) Get{{.Name}}(ctx context.Context,id {{if .IsStringID}}string{{else
 func (c Core) Add{{.Name}}(ctx context.Context,in *Add{{.Name}}Input) (*{{.Name}},error) {
 	var out {{.Name}}
 	if err :=copier.Copy(&out, in);err!=nil{
-		slog.Error("Copy","err",err)
+		slog.ErrorContext( ctx, "Copy","err",err)
 	}
 	{{ if .ExistsUniqueID }}// TODO: 建议定义前缀
 	out.ID = c.uni.UniqueID(""){{ end }}
@@ -61,10 +61,10 @@ func (c Core) Edit{{.Name}}(ctx context.Context,in *Edit{{.Name}}Input,id {{if .
 	var out {{.Name}}
 	if err :=c.store.{{.Name}}().Edit(ctx,&out,func(b *{{.Name}}){
 		if err :=copier.Copy(b, in);err!=nil{
-			slog.Error("Copy","err",err)
+			slog.ErrorContext( ctx,"Copy","err",err)
 		}
 	},orm.Where("id=?",id));err!=nil{
-		return nil,reason.ErrDB.Withf(`Edit err[%s]`, err.Error())
+		return nil,reason.ErrDB.Withf(`Edit id[%v] err[%s]`, id,err.Error())
 	}
 	return &out,nil
 }
@@ -73,7 +73,7 @@ func (c Core) Edit{{.Name}}(ctx context.Context,in *Edit{{.Name}}Input,id {{if .
 func (c Core) Del{{.Name}}(ctx context.Context,id {{if .IsStringID}}string{{else}}int{{end}}) (*{{.Name}},error) {
 	var out {{.Name}}
 	if err := c.store.{{.Name}}().Del(ctx, &out, orm.Where("id=?",id));err!=nil{
-		return nil,reason.ErrDB.Withf(`Del err[%s]`, err.Error())
+		return nil,reason.ErrDB.Withf(`Del id[%v] err[%s]`,id, err.Error())
 	}
 	return &out,nil
 }
