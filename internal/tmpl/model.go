@@ -284,14 +284,19 @@ func generateTagGormDefaultValue(expr ast.Expr) string {
 	case *ast.SelectorExpr:
 		// 处理包名.结构体名
 		pkgIdent, ok := e.X.(*ast.Ident)
-		if ok && pkgIdent.Name+"."+e.Sel.Name == "uniqueid.Core" {
-			return "string"
+		if ok {
+			if e.Sel.Name == "Time" {
+				return "CURRENT_TIMESTAMP"
+			}
+			if pkgIdent.Name+"."+e.Sel.Name == "uniqueid.Core" {
+				return "string"
+			}
+			if pkgIdent.Name+"."+e.Sel.Name == "time.Duration" {
+				return "0"
+			}
+			// TODO: gorm 的 default 如果需要扩展更多类型，可以在这里添加
 		}
-
-		// 处理选择器（例如，time.Time）
-		if e.X != nil && e.Sel != nil {
-			return "CURRENT_TIMESTAMP" // 假设时间类型
-		}
+		return "'{}'"
 	}
 
 	return "" // 对于其他未处理的类型返回空字符串
