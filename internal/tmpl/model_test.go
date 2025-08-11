@@ -12,7 +12,7 @@ import (
 )
 
 func TestParseFile(t *testing.T) {
-	out, err := ParseFile("/Users/xugo/Desktop/goweb_tools/internal/tmpl/aa.go")
+	out, err := ParseFile("internal/tmpl/aa.go")
 	if err != nil {
 		panic(err)
 	}
@@ -54,27 +54,4 @@ func TestCamelCaseToUnderscore(t *testing.T) {
 		fmt.Println(cases.Upper(language.English).String(arg))
 
 	}
-}
-
-type Aer interface {
-	Hello()
-}
-type AABCer interface {
-	Get() Aer
-}
-
-type AABC struct{}
-
-type A struct{}
-
-func (A) Hello() {}
-
-func (AABC) Get() Aer {
-	return A{}
-}
-
-func TestAABC(t *testing.T) {
-	var b AABCer = AABC{}
-	a := b.Get()
-	a.Hello()
 }

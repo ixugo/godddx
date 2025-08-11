@@ -4,7 +4,7 @@
 </p>
 
 <p align="center">
-    <a href="https://github.com/ixugo/goddd/releases"><img src="https://img.shields.io/github/v/release/ixugo/goweb?include_prereleases" alt="Version"/></a>
+    <a href="https://github.com/ixugo/goddd/releases"><img src="https://img.shields.io/github/v/release/ixugo/goddd?include_prereleases" alt="Version"/></a>
     <a href="https://github.com/ixugo/goddd/blob/master/LICENSE.txt"><img src="https://img.shields.io/dub/l/vibe-d.svg" alt="License"/></a>
 	<a href="https://gin-gonic.com"><img width=30px  src="https://avatars.githubusercontent.com/u/7894478?s=48&v=4" alt="GIN"/></a>
     <a href="https://gorm.io"><img width=70px src="https://gorm.io/gorm.svg" alt="GORM"/></a>
@@ -31,7 +31,7 @@ go install golang.org/x/tools/cmd/goimports@latest
 
 ## 流程
 
-1. clone goweb 模板，或初始化项目 go mod init project
+1. clone [goddd](github.com/ixugo/goddd) 模板，或初始化项目 go mod init project
 2. 创建 model.go 文件，写入结构体
    ```go
     // 包名即为生成的模块目录名
