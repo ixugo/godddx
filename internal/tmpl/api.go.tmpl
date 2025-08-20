@@ -20,7 +20,7 @@ type {{$PackageName}}API struct{
 
 func New{{$PackageName}}Core(db *gorm.DB, {{ if .ExistsUniqueID }}uni uniqueid.Core{{ end }}) {{.PackageName}}.Core {
 	var store {{$packageName}}.Storer
-	store = {{$packageName}}db.NewDB(db).AutoMigrate(orm.EnabledAutoMigrate)
+	store = {{$packageName}}db.NewDB(db).AutoMigrate(orm.GetEnabledAutoMigrate())
 	// 如果需要缓存，可以取消注释
 	// store = {{$packageName}}cache.NewCache(store,conc.NewTTLCache(time.Hour))
 	return {{$packageName}}.NewCore(store, {{ if .ExistsUniqueID }}uni{{ end }} )
