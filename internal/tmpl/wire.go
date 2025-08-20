@@ -5,6 +5,7 @@ package tmpl
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -357,7 +358,10 @@ func CommandContext(args ...string) error {
 	cmd.Stdin = os.Stdin
 	cmd.Env = os.Environ()
 	if err := cmd.Start(); err != nil {
-		return err
+		return fmt.Errorf("%s %s", args[0], err)
 	}
-	return cmd.Wait()
+	if err := cmd.Wait(); err != nil {
+		return fmt.Errorf("%s %s", args[0], err)
+	}
+	return nil
 }

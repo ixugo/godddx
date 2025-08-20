@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"os/exec"
 	"strings"
 
 	"github.com/ixugo/godddx/internal/tmpl"
@@ -55,7 +54,7 @@ func main() {
 	flag.Parse()
 
 	if *version {
-		fmt.Println("github.com/ixugo/godddx v1.3.3")
+		fmt.Println("github.com/ixugo/godddx v1.3.4")
 		return
 	}
 
@@ -81,22 +80,11 @@ func main() {
 		}
 	}
 
-	if err := CommandContext("goimports", "-w", "."); err != nil {
+	if err := tmpl.CommandContext("goimports", "-w", "."); err != nil {
 		fmt.Println("⚠️  err:", err)
 	}
 
-	if err := CommandContext("gofumpt", "-l", "-w", "."); err != nil {
+	if err := tmpl.CommandContext("gofumpt", "-l", "-w", "."); err != nil {
 		fmt.Println("⚠️  err:", err)
 	}
-}
-
-func CommandContext(args ...string) error {
-	cmd := exec.Command(args[0], args[1:]...)
-	cmd.Stdout = os.Stdout
-	cmd.Stdin = os.Stdin
-	cmd.Env = os.Environ()
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-	return cmd.Wait()
 }
