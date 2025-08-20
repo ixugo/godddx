@@ -4,6 +4,17 @@ package {{.PackageName}}
 import "github.com/ixugo/goddd/pkg/orm"
 import "database/sql/driver"
 
+
+{{- range $i, $c := .Consts }}
+{{$c}}
+{{- end}}
+
+{{- range $i, $c := .Vars }}
+{{$c}}
+{{- end}}
+
+
+
 {{range .Models}}{{ if .IsNotDB }}
 // {{.Name | IfUpperUnderscoreToUpperCamelCase}} domain model
 type {{.Name | IfUpperUnderscoreToUpperCamelCase}} struct{
@@ -22,3 +33,8 @@ func (i {{.Name}}) Value() (driver.Value, error) {
 }
 
 {{end}}{{end}}
+
+
+{{- range $i, $c := .Funcs }}
+{{$c}}
+{{- end}}

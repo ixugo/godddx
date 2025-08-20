@@ -18,6 +18,10 @@ type ModelTmpl struct {
 	Models      []Table
 
 	ExistsUniqueID bool
+
+	Consts []string
+	Vars   []string
+	Funcs  []string
 }
 
 type Table struct {
@@ -43,6 +47,11 @@ type Domain struct {
 	Models      []*Models
 
 	ExistsUniqueID bool
+
+	// Top-level declarations captured from source file
+	Consts []string
+	Vars   []string
+	Funcs  []string
 }
 
 type Models struct {
@@ -133,6 +142,26 @@ func ParseFile(path string) (*Domain, error) {
 
 			}
 		}
+
+		// collect const and var declarations
+		if ok && (genDecl.Tok == token.CONST || genDecl.Tok == token.VAR) {
+			var buf bytes.Buffer
+			_ = printer.Fprint(&buf, fileSet, genDecl)
+			code := buf.String()
+			if genDecl.Tok == token.CONST {
+				out.Consts = append(out.Consts, code)
+			} else {
+				out.Vars = append(out.Vars, code)
+			}
+		}
+
+		// collect top-level functions
+		if fn, ok := n.(*ast.FuncDecl); ok {
+			// only top-level (methods and functions are both fine)
+			var buf bytes.Buffer
+			_ = printer.Fprint(&buf, fileSet, fn)
+			out.Funcs = append(out.Funcs, buf.String())
+		}
 		return true
 	})
 	return &out, nil
@@ -211,6 +240,10 @@ func generateModelCode(domain *Domain) (*ModelTmpl, error) {
 		PackageName:    domain.PackageName,
 		ModuleName:     domain.ModuleName,
 		ExistsUniqueID: domain.ExistsUniqueID,
+		// pass through top-level declarations
+		Consts: domain.Consts,
+		Vars:   domain.Vars,
+		Funcs:  domain.Funcs,
 	}
 
 	for _, model := range domain.Models {
