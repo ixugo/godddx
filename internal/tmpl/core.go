@@ -106,7 +106,7 @@ func Start(path, module string) error {
 			return fmt.Errorf("请手动更新 provider.go 依赖注入, %w", err)
 		}
 		if err := MakeWire(); err != nil {
-			fmt.Println("请手动执行 make wire, err:", err)
+			fmt.Println("⚠️ 请手动执行 make wire, err:", err)
 		}
 
 		// 填充 api 路由
