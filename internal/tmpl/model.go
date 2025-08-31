@@ -251,20 +251,30 @@ func generateModelCode(domain *Domain) (*ModelTmpl, error) {
 		for _, ident := range model.Ident {
 
 			var tag strings.Builder
-			defaultValue := generateTagGormDefaultValue(ident.Type)
-			if defaultValue != "" {
-				tag.WriteString(";default:" + defaultValue)
+			tag.WriteString(fmt.Sprintf(`gorm:"column:%s`, CamelCaseToUnderscore(ident.Name)))
+
+			// 非指针类型
+			if _, ok := ident.Type.(*ast.StarExpr); !ok {
+				tag.WriteString(";notNull")
+
+				defaultValue := generateTagGormDefaultValue(ident.Type)
+				if defaultValue != "" {
+					tag.WriteString(";default:" + defaultValue)
+				}
+				if defaultValue == "'{}'" {
+					tag.WriteString(";type:jsonb")
+				}
 			}
-			if defaultValue == "'{}'" {
-				tag.WriteString(";type:jsonb")
-			}
+
 			if ident.Comment != "" {
 				tag.WriteString(";comment:" + ident.Comment)
 			}
+			tag.WriteString(`"`)
+
 			line := Line{
 				Name:    ident.Name,
 				Type:    fieldTypeToString(ident.Type),
-				Tag:     fmt.Sprintf(`gorm:"column:%s;notNull%s"`, CamelCaseToUnderscore(ident.Name), tag.String()),
+				Tag:     tag.String(),
 				Comment: ident.Comment,
 			}
 			if ident.Name == "ID" {
@@ -287,6 +297,9 @@ func generateModelCode(domain *Domain) (*ModelTmpl, error) {
 
 func generateTagGormDefaultValue(expr ast.Expr) string {
 	switch e := expr.(type) {
+	case *ast.StarExpr:
+		// 指针类型不应该有默认值
+		return ""
 	case *ast.Ident:
 		// 检查标识符是否是特定的类型
 		switch e.Name {
