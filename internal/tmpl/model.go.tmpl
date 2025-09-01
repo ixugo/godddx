@@ -24,7 +24,7 @@ type {{.Name | IfUpperUnderscoreToUpperCamelCase}} struct{
 
 // Scan implements orm.Scaner.
 func (i *{{.Name}}) Scan(input any) error {
-	return orm.JsonUnmarshal(input, i)
+	return orm.JSONUnmarshal(input, i)
 }
 
 
