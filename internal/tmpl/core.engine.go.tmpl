@@ -16,6 +16,7 @@ type {{.Name}}Storer interface{
 	Add(context.Context,*{{.Name}}) error
 	Edit(context.Context,*{{.Name}},func(*{{.Name}}),...orm.QueryOption) error
 	Del(context.Context,*{{.Name}}, ...orm.QueryOption) error
+	Count(context.Context, ...orm.QueryOption) (int64,error)
 
 	Session(context.Context, ...func(*gorm.DB) error) error
 	EditWithSession(*gorm.DB, *{{.Name}}, func(b *{{.Name}}) error, ...orm.QueryOption) error

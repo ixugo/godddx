@@ -43,6 +43,11 @@ func (d {{.Name}})Del(ctx context.Context,model *{{.PackageName}}.{{.Name}},opts
 	return orm.DeleteWithContext(ctx,d.db, model, opts...)
 }
 
+// Count implements {{.PackageName}}.{{.Name}}Storer.
+func (d {{.Name}})Count(ctx context.Context,opts...orm.QueryOption) (int64,error) {
+	return orm.CountWithContext[{{.PackageName}}.{{.Name}}](ctx,d.db, opts...)
+}
+
 // Session 事务组合
 func (d {{.Name}})Session(ctx context.Context,changeFns ...func(*gorm.DB) error) error {
 	return d.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
