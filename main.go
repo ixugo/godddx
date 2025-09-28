@@ -54,7 +54,7 @@ func main() {
 	flag.Parse()
 
 	if *version {
-		fmt.Println("github.com/ixugo/godddx v1.3.4")
+		fmt.Println("github.com/ixugo/godddx v1.3.17")
 		return
 	}
 
