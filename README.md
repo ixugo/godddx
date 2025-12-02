@@ -1,6 +1,6 @@
 <p align="center">
-    <img src="./logo.png#gh-light-mode-only" alt="Goyave Logo" width="550"/>
-    <img src="./logo_dark.png#gh-dark-mode-only" alt="Goyave Logo" width="550"/>
+    <img src="./logo.png#gh-light-mode-only" alt="GoDDD Logo" width="550"/>
+    <img src="./logo_dark.png#gh-dark-mode-only" alt="GoDDD Logo" width="550"/>
 </p>
 
 <p align="center">
@@ -8,20 +8,139 @@
     <a href="https://github.com/ixugo/goddd/blob/master/LICENSE.txt"><img src="https://img.shields.io/dub/l/vibe-d.svg" alt="License"/></a>
 	<a href="https://gin-gonic.com"><img width=30px  src="https://avatars.githubusercontent.com/u/7894478?s=48&v=4" alt="GIN"/></a>
     <a href="https://gorm.io"><img width=70px src="https://gorm.io/gorm.svg" alt="GORM"/></a>
-
 </p>
 
-# 企业 REST API 模板工具
+<p align="center">
+    <a href="./README.md">English</a> | <a href="./README_CN.md">中文</a>
+</p>
 
-用于自动生成 CRUD 代码
+# GoDDD — Domain-Driven Design Framework for Go
 
-## 设计参考
+**GoDDD** = **Go** + **DDD** (Domain-Driven Design)
 
-[Google API Design Guide](https://google-cloud.gitbook.io/api-design-guide)
+A REST API framework and code generation tool based on Clean Architecture principles, designed specifically for small to medium-sized Go projects.
 
-## 安装
+---
 
-在终端执行
+## 🎯 Design Philosophy
+
+### Clean Architecture in Go Practice
+
+GoDDD is deeply inspired by [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html). After understanding its core principles, we designed a **pragmatic layered architecture** tailored for small to medium projects — preserving the core value of dependency inversion while avoiding the development burden of over-abstraction.
+
+<p align="center">
+    <img src="./docs/ddd.jpg" alt="Clean Architecture" width="800"/>
+</p>
+
+### Core Principles
+
+**Dependency Rule**: Outer layers depend on inner layers; inner layers reverse dependencies through interfaces.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                      API Layer (Primary Adapter)                    │
+│  internal/web/api/                                                  │
+│  Responsibility: HTTP protocol conversion → Call Core → Response    │
+└────────────────────────────────┬────────────────────────────────────┘
+                                 │ depends on
+                                 ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                   Core Layer (Domain/Business Core)                 │
+│  internal/core/<domain>/                                            │
+│  Responsibility: Business logic, domain models, port interfaces     │
+│                                                                     │
+│  ├─ core.go           # Core struct + Storer interface definition   │
+│  ├─ port.go           # Secondary adapter interfaces (cross-domain) │
+│  ├─ model.go          # Domain type definitions (non-GORM mapped)   │
+│  ├─ <entity>.go       # Business methods + EntityStorer interface   │
+│  ├─ <entity>.model.go # Domain model (GORM mapped)                  │
+│  ├─ <entity>.param.go # Input parameter definitions                 │
+│  ├─ adapter/          # Cross-domain adapter implementations        │
+│  └─ store/<domain>db/ # Database implementation (secondary adapter) │
+└───────────────┬─────────────────────────────────────────────────────┘
+                │ implements
+                ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                  Store/Adapter Layer (Secondary Adapter)            │
+│              Implements Storer interfaces defined in Core           │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Design Principles
+
+| Traditional View | GoDDD Position |
+|-----------------|----------------|
+| "Small projects don't need layering" | ❌ Layering is automated by tools, cost approaches zero |
+| "Direct calls between domains are convenient" | ❌ Convenient now, technical debt forever |
+| "Too many interfaces are troublesome" | ✅ godddx auto-generates, no boilerplate needed |
+
+### Domain Isolation Principle
+
+**Domains must be decoupled through interfaces**, even if two domains are closely related (e.g., message and user), they cannot directly import each other.
+
+```go
+// ❌ Wrong: message directly depends on user package
+import "myapp/internal/core/user"
+
+func (c *Core) AddMessage(ctx context.Context, in AddMessageInput) error {
+    u := user.NewService().Get(in.UserID) // Breaks cohesion!
+}
+
+// ✅ Correct: Define interface in port.go, inject via adapter
+type UserProvider interface {
+    GetUserBrief(ctx context.Context, userID string) (*UserBrief, error)
+}
+
+func (c *Core) AddMessage(ctx context.Context, in AddMessageInput, provider UserProvider) error {
+    user, _ := provider.GetUserBrief(ctx, in.To)
+    // Use UserBrief type defined in this domain
+}
+```
+
+**Adapter Implementation** (located in `adapter/` directory):
+```go
+// adapter/user.go
+type UserAdapter struct {
+    userCore user.Core  // Adapter can directly depend on other domain's Core
+}
+
+func (a *UserAdapter) GetUserBrief(ctx context.Context, userID string) (*message.UserBrief, error) {
+    u, err := a.userCore.GetUser(ctx, userID)
+    if err != nil {
+        return nil, nil
+    }
+    return &message.UserBrief{ID: u.ID, Name: u.Name}, nil  // Convert to this domain's type
+}
+```
+
+### Layer Responsibilities
+
+| Layer | Responsibility | Guidelines |
+|-------|---------------|------------|
+| **API Layer** | HTTP protocol conversion | Only parameter binding, auth checks, calling Core, returning response |
+| **Core Layer** | Business logic orchestration | Define all interfaces, contain domain models and business methods |
+| **Store Layer** | Data persistence | Implement Storer interfaces defined in Core |
+| **Adapter Layer** | Cross-domain collaboration | Implement Provider interfaces defined in Core |
+
+**Core Mantra:**
+```
+Core imports none, interfaces define contracts;
+Generation ensures consistency, assembly at the edge;
+Types guard boundaries, tests need no dependencies;
+Small steps run steady, refactoring becomes easy.
+```
+
+---
+
+## 📚 Design References
+
+- [Google API Design Guide](https://google-cloud.gitbook.io/api-design-guide)
+- [Clean Architecture - Robert C. Martin](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+- [Domain-Driven Design - Eric Evans](https://www.domainlanguage.com/ddd/)
+
+---
+
+## 🚀 Installation
 
 ```bash
 go install github.com/ixugo/godddx@latest
@@ -29,63 +148,124 @@ go install mvdan.cc/gofumpt@latest
 go install golang.org/x/tools/cmd/goimports@latest
 ```
 
-## 流程
+---
 
-1. clone [goddd](github.com/ixugo/goddd) 模板，或初始化项目 go mod init project
-2. 创建 model.go 文件，写入结构体
-   ```go
-    // 包名即为生成的模块目录名
-    package user
+## 📖 Quick Start
 
-    type User struct {
-        // 按照 gorm 的建议，应当包含  CreatedAt, UpdatedAt
-        // goddx 生成的列表查询也会依赖 CreatedAt 查询排序
-        ID int
-        CreatedAt orm.Time
-        UpdatedAt orm.Time
+### 1. Initialize Project
 
-	    Name string // 昵称
-	    Age  int64  //  年龄
-    }
-   ```
-3. 执行 `godddx -f ./model.go` 即可生成代码
-4. 在项目中调用 registerUser 函数，将生成的代码注册到 gin 路由上。
+Clone the [goddd](https://github.com/ixugo/goddd) template, or initialize a new project:
 
-## 使用技巧
-1. 定义结构体时，想使用字符串 id，但是 uuid 太长了，可采用以下方案
+```bash
+go mod init myproject
+```
+
+### 2. Define Domain Model
+
+Create `tables/<domain>/<entity>.go` file and define the entity structure:
+
+```go
+// Package name becomes the generated module directory name
+package user
+
+import "github.com/ixugo/goddd/pkg/orm"
+
+type User struct {
+    // Must include ID, CreatedAt, UpdatedAt
+    ID        int      // Integer ID
+    // ID     string   // Or string ID (use uniqueid.Core to generate)
+    CreatedAt orm.Time
+    UpdatedAt orm.Time
+
+    Name string // Nickname (field comments become GORM comments)
+    Age  int64  // Age
+}
+```
+
+### 3. Generate Code
+
+```bash
+godddx -f tables/user/user.go
+```
+
+### 4. Register Routes
+
+Call the generated `RegisterUser` function in your project to register the code with gin router.
+
+---
+
+## 💡 Tips
+
+### String IDs
+
+Use short IDs instead of UUIDs:
+
 ```go
 import "github.com/ixugo/goddd/domain/uniqueid"
-type User struct{
+
+type User struct {
     ID uniqueid.Core
 }
 ```
-此时生成工具会自动处理，添加接口会自动生成随机 6 位数 id。
 
-需要修改长度，可以全局搜索 `NewUniqueID` 函数，其第二个入参即为长度，也可以主动调用函数 `uni.UniqueIDWithCustomLen()` 指定长度。
+The generator handles this automatically, defaulting to 6-character random IDs. To modify the length, search for `NewUniqueID` function, or call `uni.UniqueIDWithCustomLen()` to specify the length.
 
-2. 当在 goddd 的环境中的项目根目录使用此工具时，会自动完成依赖注入
-更新 `internal/web/api/provider.go`, `internal/web/api/api.go` 两个文件
+It's recommended to define prefix constants for string IDs to distinguish entity types.
 
-3. 结构体的属性中必须存在 ID，字符串或整型，如果不符合这个条件，生成后的代码需要微调
+### Automatic Dependency Injection
 
-4. 缓存代码在前期是可以不必要的，建议删除生成后的 store/cache 目录
+When using this tool in the goddd project root directory, it will automatically update:
+- `internal/web/api/provider.go`
+- `internal/web/api/api.go`
 
-## 功能
+### Model Requirements
 
-- [x] 生成 5 项常用 CRUD (增删改查,分页搜索)
-- [x] 生成 5 项常用 CRUD 缓存(支持 redis)
-- [ ] 生成 5 项常用 CRUD 的测试函数
-- [ ] 生成 5 项常用 CRUD 的接口文档
-- [ ] 支持分页查询中，前端传递排序方式
+Structs must include `ID`, `CreatedAt`, `UpdatedAt` fields, otherwise the generated code will need minor adjustments.
 
-## 问题
+### Caching Recommendations
 
-> 为什么不读数据库生成代码?
+Caching code may not be necessary in early stages. Consider deleting the generated `store/cache` directory and enabling it later when performance optimization is needed.
 
-平时在表中用 json 类型较多，读数据库没办法生成 json 结构体。
+### API Layer Parameter Filling
 
-> 模型中定义了函数 CacheKey 做什么用的?
+If an Input parameter is filled by the API layer (e.g., current logged-in user), its tag should use `json:"-"` with a comment:
 
-生成的缓存代码，必须知道键，才能到值，如果键有很多个，则删除的时候会很麻烦。
-CacheKey 方法用来确定这个模型的唯一标识，默认应该是 ID，但如果不是通过 id 频繁查询，可以自行修改成其它键
-例如 goddd 项目中的 token 实现，就是以 hash 为键。
+```go
+type FindMessageInput struct {
+    web.PagerFilter
+    ReceiverID string `json:"-"`    // Receiver ID (filled by API layer with current user)
+    Type       string `form:"type"` // Message type
+}
+```
+
+---
+
+## ✅ Feature List
+
+- [x] Generate 5 common CRUD operations (Create, Read, Update, Delete, Paginated Search)
+- [x] Generate 5 common CRUD cache operations (Redis supported)
+- [ ] Generate test functions for 5 common CRUD operations
+- [ ] Generate API documentation for 5 common CRUD operations
+- [ ] Support frontend-specified sorting in paginated queries
+
+---
+
+## ❓ FAQ
+
+### Why not generate code from the database?
+
+Tables often use JSON types, and reading from the database cannot generate JSON structs. Starting from Go structs better expresses domain models.
+
+### What is the `CacheKey` method in the model for?
+
+Generated cache code needs a key to get values. The `CacheKey` method determines the model's unique identifier:
+
+- Defaults to `ID`
+- Can be modified to other keys if ID is not the frequent query field
+- Example: In the goddd project's token implementation, hash is used as the key
+
+---
+
+## 📜 License
+
+[MIT License](./LICENSE.txt)
