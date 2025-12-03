@@ -255,10 +255,9 @@ func generateModelCode(domain *Domain) (*ModelTmpl, error) {
 
 			// 非指针类型
 			if _, ok := ident.Type.(*ast.StarExpr); !ok {
-				tag.WriteString(";notNull")
-
 				defaultValue := generateTagGormDefaultValue(ident.Type)
 				if defaultValue != "" {
+					tag.WriteString(";notNull")
 					tag.WriteString(";default:" + defaultValue)
 				}
 				if defaultValue == "'{}'" {
@@ -334,11 +333,14 @@ func generateTagGormDefaultValue(expr ast.Expr) string {
 			if e.Sel.Name == "Time" {
 				return "CURRENT_TIMESTAMP"
 			}
-			if pkgIdent.Name+"."+e.Sel.Name == "uniqueid.Core" {
+			fullName := pkgIdent.Name + "." + e.Sel.Name
+			switch fullName {
+			case "uniqueid.Core":
 				return "string"
-			}
-			if pkgIdent.Name+"."+e.Sel.Name == "time.Duration" {
+			case "time.Duration":
 				return "0"
+			case "orm.DeletedAt", "gorm.DeletedAt":
+				return ""
 			}
 			// TODO: gorm 的 default 如果需要扩展更多类型，可以在这里添加
 		}
