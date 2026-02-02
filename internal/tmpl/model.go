@@ -78,7 +78,22 @@ func ParseFile(path string) (*Domain, error) {
 	if err != nil {
 		return nil, err
 	}
+	return parseAST(fileSet, node)
+}
 
+// ParseContent 从 Go 源代码内容解析领域模型，适用于 MCP 调用场景
+func ParseContent(content string) (*Domain, error) {
+	fileSet := token.NewFileSet()
+
+	node, err := parser.ParseFile(fileSet, "model.go", content, parser.ParseComments|parser.AllErrors)
+	if err != nil {
+		return nil, err
+	}
+	return parseAST(fileSet, node)
+}
+
+// parseAST 从 AST 节点解析领域模型，为 ParseFile 和 ParseContent 共用的核心逻辑
+func parseAST(fileSet *token.FileSet, node *ast.File) (*Domain, error) {
 	var out Domain
 	out.PackageName = node.Name.Name
 

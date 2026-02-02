@@ -150,6 +150,46 @@ go install golang.org/x/tools/cmd/goimports@latest
 
 ---
 
+## 🤖 MCP Integration (Cursor/Claude)
+
+godddx supports running as an MCP (Model Context Protocol) server, allowing AI assistants to directly invoke code generation capabilities.
+
+### Configure Cursor
+
+Add MCP server configuration in Cursor settings (`~/.cursor/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "godddx": {
+      "command": "godddx",
+      "args": ["-mcp"]
+    }
+  }
+}
+```
+
+
+### MCP Tool Description
+
+Once configured, the AI assistant can use the `generate_ddd_code` tool:
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `content` | ✅ | Go domain model file content, must include package declaration and type struct definitions |
+| `module` | ✅ | Go module name, e.g., `github.com/yourname/project` |
+| `output_dir` | ✅ | Project root directory path (directory containing go.mod) |
+
+### Usage Example
+
+In Cursor, you can simply tell the AI:
+
+> "Help me generate DDD code for a User domain model in the /path/to/myproject directory"
+
+The AI will automatically call the godddx MCP tool to generate the code.
+
+---
+
 ## 📖 Quick Start
 
 ### 1. Initialize Project

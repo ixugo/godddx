@@ -150,6 +150,46 @@ go install golang.org/x/tools/cmd/goimports@latest
 
 ---
 
+## 🤖 MCP 集成（Cursor/Claude）
+
+godddx 支持作为 MCP（Model Context Protocol）服务运行，让 AI 助手可以直接调用代码生成功能。
+
+### 配置 Cursor
+
+可以复制当前项目中的 .cursor/mcp.json 到开发项目中，也可以
+在 Cursor 设置中添加 MCP 服务器配置（`~/.cursor/mcp.json`）：
+
+```json
+{
+  "mcpServers": {
+    "godddx": {
+      "command": "godddx",
+      "args": ["-mcp"]
+    }
+  }
+}
+```
+
+### MCP 工具说明
+
+配置完成后，AI 助手可以使用 `generate_ddd_code` 工具：
+
+| 参数 | 必填 | 说明 |
+|-----|------|------|
+| `content` | ✅ | Go 领域模型文件内容，必须包含 package 声明和 type 结构体定义 |
+| `module` | ✅ | Go 模块名称，例如 `github.com/yourname/project` |
+| `output_dir` | ✅ | 项目根目录路径（包含 go.mod 的目录） |
+
+### 使用示例
+
+在 Cursor 中，你可以直接告诉 AI：
+
+> "使用 godddx 工具生成一个 User 领域模型的 DDD 代码"
+
+AI 会自动调用 godddx MCP 工具生成代码。
+
+---
+
 ## 📖 快速开始
 
 ### 1. 初始化项目

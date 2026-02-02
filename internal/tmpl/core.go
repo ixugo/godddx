@@ -38,26 +38,42 @@ func Start(path, module string) error {
 	if err != nil {
 		return err
 	}
+	_, err = startGenerate(domain, module)
+	return err
+}
+
+// StartFromContent 从 Go 源代码内容生成 DDD 代码，适用于 MCP 调用场景
+// 返回生成的文件列表
+func StartFromContent(content, module string) ([]string, error) {
+	domain, err := ParseContent(content)
+	if err != nil {
+		return nil, fmt.Errorf("解析源代码失败: %w", err)
+	}
+	return startGenerate(domain, module)
+}
+
+// startGenerate 核心代码生成逻辑，供 Start 和 StartFromContent 共用
+func startGenerate(domain *Domain, module string) ([]string, error) {
 	domain.ModuleName = module
 	// 虚拟目录
 	out := make(map[string]*bytes.Buffer)
 
 	// core/model.go
 	if err := handlerDomainModel(domain, out); err != nil {
-		return err
+		return nil, err
 	}
 
 	// core/core.go
 	if err := handlerDomainCore(domain, out); err != nil {
-		return err
+		return nil, err
 	}
 	// core/store/userdb/db.go
 	if err := handlerDomainDB(domain, out); err != nil {
-		return err
+		return nil, err
 	}
 	// core/store/usercache/cache.go
 	if err := handlerDomainCache(domain, out); err != nil {
-		return err
+		return nil, err
 	}
 
 	// api
@@ -65,7 +81,7 @@ func Start(path, module string) error {
 
 		tp, err := generateModelCode(domain)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		apiFile := bytes.NewBuffer(nil)
 		out[fmt.Sprintf("internal/web/api/%s.go", domain.PackageName)] = apiFile
@@ -86,24 +102,30 @@ func Start(path, module string) error {
 		}
 	}
 
+	// 收集生成的文件列表
+	generatedFiles := make([]string, 0, len(out))
+	for k := range out {
+		generatedFiles = append(generatedFiles, k)
+	}
+
 	// 填充 provider.go 依赖注入
 	if FileExists("", "provider.go") {
 		const uniqueidName = "NewUniqueID"
 		if domain.ExistsUniqueID {
 			if _, err := AppendProviderSetArg("", uniqueidName); err != nil {
-				return fmt.Errorf("缺少 NewUniqueID, 请手动更新 provider.go 依赖注入, %w", err)
+				return generatedFiles, fmt.Errorf("缺少 NewUniqueID, 请手动更新 provider.go 依赖注入, %w", err)
 			}
 		}
 
 		apiName := fmt.Sprintf("New%sAPI", UnderscoreToUpperCamelCase(domain.PackageName))
 		coreName := fmt.Sprintf("New%sCore", UnderscoreToUpperCamelCase(domain.PackageName))
 		if _, err := AppendProviderSetArg("", coreName, apiName); err != nil {
-			return fmt.Errorf("请手动更新 provider.go 依赖注入, %w", err)
+			return generatedFiles, fmt.Errorf("请手动更新 provider.go 依赖注入, %w", err)
 		}
 
 		fieldName := fmt.Sprintf("%sAPI", UnderscoreToUpperCamelCase(domain.PackageName))
 		if _, err := AppendUsecaseField("", fmt.Sprintf("%s %s", fieldName, fieldName)); err != nil {
-			return fmt.Errorf("请手动更新 provider.go 依赖注入, %w", err)
+			return generatedFiles, fmt.Errorf("请手动更新 provider.go 依赖注入, %w", err)
 		}
 		if err := MakeWire(); err != nil {
 			fmt.Println("⚠️ 请手动执行 make wire, err:", err)
@@ -114,12 +136,12 @@ func Start(path, module string) error {
 			funcName := fmt.Sprintf("Register%s", UnderscoreToUpperCamelCase(domain.PackageName))
 			line := fmt.Sprintf("%s(r, uc.%s)", funcName, fieldName)
 			if _, err := AppendLineToSetupRouter("", funcName, line); err != nil {
-				return fmt.Errorf("请手动更新 api.go 路由, %w", err)
+				return generatedFiles, fmt.Errorf("请手动更新 api.go 路由, %w", err)
 			}
 		}
 	}
 
-	return nil
+	return generatedFiles, nil
 }
 
 func handlerDomainModel(out *Domain, bufMap map[string]*bytes.Buffer) error {
