@@ -22,7 +22,7 @@
 
 ---
 
-## 🎯 设计哲学
+## 设计哲学
 
 ### 清晰架构的 Go 实践
 
@@ -132,7 +132,7 @@ Core 不引外，接口定契约；
 
 ---
 
-## 📚 设计参考
+## 设计参考
 
 - [Google API Design Guide](https://google-cloud.gitbook.io/api-design-guide)
 - [Clean Architecture - Robert C. Martin](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
@@ -140,7 +140,7 @@ Core 不引外，接口定契约；
 
 ---
 
-## 🚀 安装
+## 安装
 
 ```bash
 go install github.com/ixugo/godddx@latest
@@ -150,7 +150,7 @@ go install golang.org/x/tools/cmd/goimports@latest
 
 ---
 
-## 🤖 MCP 集成（Cursor/Claude）
+## MCP 集成（Cursor/Claude）
 
 godddx 支持作为 MCP（Model Context Protocol）服务运行，让 AI 助手可以直接调用代码生成功能。
 
@@ -234,7 +234,7 @@ godddx -f tables/user/user.go
 
 ---
 
-## 💡 使用技巧
+## 使用技巧
 
 ### 字符串 ID
 
@@ -280,17 +280,18 @@ type FindMessageInput struct {
 
 ---
 
-## ✅ 功能清单
+## 功能清单
 
 - [x] 生成 5 项常用 CRUD（增删改查、分页搜索）
 - [x] 生成 5 项常用 CRUD 缓存（支持 Redis）
+- [x] 支持 mcp
 - [ ] 生成 5 项常用 CRUD 的测试函数
 - [ ] 生成 5 项常用 CRUD 的接口文档
 - [ ] 支持分页查询中前端传递排序方式
 
 ---
 
-## ❓ 常见问题
+## 常见问题
 
 ### 为什么不读数据库生成代码？
 
@@ -306,6 +307,6 @@ type FindMessageInput struct {
 
 ---
 
-## 📜 License
+## License
 
 [MIT License](./LICENSE.txt)

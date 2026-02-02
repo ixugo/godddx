@@ -18,15 +18,15 @@
 
 **GoDDD** = **Go** + **DDD** (Domain-Driven Design)
 
-A REST API framework and code generation tool based on Clean Architecture principles, designed specifically for small to medium-sized Go projects.
+A REST API framework and code generation tool designed for small to medium-sized Go projects, based on Clean Architecture principles.
 
 ---
 
-## 🎯 Design Philosophy
+## Design Philosophy
 
 ### Clean Architecture in Go Practice
 
-GoDDD is deeply inspired by [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html). After understanding its core principles, we designed a **pragmatic layered architecture** tailored for small to medium projects — preserving the core value of dependency inversion while avoiding the development burden of over-abstraction.
+GoDDD is deeply inspired by [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html). After understanding its core principles, we designed a **pragmatic layered architecture** for small to medium-sized projects—preserving the core value of dependency inversion while avoiding the development burden of over-abstraction.
 
 <p align="center">
     <img src="./docs/ddd.jpg" alt="Clean Architecture" width="800"/>
@@ -34,59 +34,59 @@ GoDDD is deeply inspired by [Clean Architecture](https://blog.cleancoder.com/unc
 
 ### Core Principles
 
-**Dependency Rule**: Outer layers depend on inner layers; inner layers reverse dependencies through interfaces.
+**Dependency Rule**: Outer layers depend on inner layers; inner layers invert dependencies through interfaces.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                      API Layer (Primary Adapter)                    │
+│                       API Layer (Driving Adapter)                   │
 │  internal/web/api/                                                  │
-│  Responsibility: HTTP protocol conversion → Call Core → Response    │
+│  Responsibility: HTTP protocol conversion → Call Core → Return response │
 └────────────────────────────────┬────────────────────────────────────┘
-                                 │ depends on
+                                 │ Depends on
                                  ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                   Core Layer (Domain/Business Core)                 │
 │  internal/core/<domain>/                                            │
-│  Responsibility: Business logic, domain models, port interfaces     │
+│  Responsibility: Business logic, domain models, port interface definitions │
 │                                                                     │
 │  ├─ core.go           # Core struct + Storer interface definition   │
-│  ├─ port.go           # Secondary adapter interfaces (cross-domain) │
-│  ├─ model.go          # Domain type definitions (non-GORM mapped)   │
+│  ├─ port.go           # Driven adapter interfaces (cross-domain collaboration) │
+│  ├─ model.go          # Domain type definitions (non-GORM mapping)  │
 │  ├─ <entity>.go       # Business methods + EntityStorer interface   │
-│  ├─ <entity>.model.go # Domain model (GORM mapped)                  │
+│  ├─ <entity>.model.go # Domain model (GORM mapping)                 │
 │  ├─ <entity>.param.go # Input parameter definitions                 │
 │  ├─ adapter/          # Cross-domain adapter implementations        │
-│  └─ store/<domain>db/ # Database implementation (secondary adapter) │
+│  └─ store/<domain>db/ # Database implementation (driven adapter)    │
 └───────────────┬─────────────────────────────────────────────────────┘
-                │ implements
+                │ Implements interface
                 ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                  Store/Adapter Layer (Secondary Adapter)            │
-│              Implements Storer interfaces defined in Core           │
+│                   Store/Adapter Layer (Driven Adapter)              │
+│               Implements Storer interfaces defined by Core layer    │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Design Principles
+### Design Philosophy
 
 | Traditional View | GoDDD Position |
 |-----------------|----------------|
 | "Small projects don't need layering" | ❌ Layering is automated by tools, cost approaches zero |
-| "Direct calls between domains are convenient" | ❌ Convenient now, technical debt forever |
-| "Too many interfaces are troublesome" | ✅ godddx auto-generates, no boilerplate needed |
+| "Direct calls to other domains are convenient" | ❌ Convenient for now, technical debt forever |
+| "Too many interfaces are troublesome" | ✅ godddx auto-generates them, no need to write boilerplate |
 
 ### Domain Isolation Principle
 
-**Domains must be decoupled through interfaces**, even if two domains are closely related (e.g., message and user), they cannot directly import each other.
+**Domains must be decoupled through interfaces**. Even if two domains are closely related (like message and user), they cannot directly import each other.
 
 ```go
-// ❌ Wrong: message directly depends on user package
+// ❌ Wrong approach: message directly depends on user package
 import "myapp/internal/core/user"
 
 func (c *Core) AddMessage(ctx context.Context, in AddMessageInput) error {
     u := user.NewService().Get(in.UserID) // Breaks cohesion!
 }
 
-// ✅ Correct: Define interface in port.go, inject via adapter
+// ✅ Correct approach: Define interface in port.go, inject through adapter
 type UserProvider interface {
     GetUserBrief(ctx context.Context, userID string) (*UserBrief, error)
 }
@@ -97,7 +97,7 @@ func (c *Core) AddMessage(ctx context.Context, in AddMessageInput, provider User
 }
 ```
 
-**Adapter Implementation** (located in `adapter/` directory):
+**Adapter implementation** (located in `adapter/` directory):
 ```go
 // adapter/user.go
 type UserAdapter struct {
@@ -117,22 +117,22 @@ func (a *UserAdapter) GetUserBrief(ctx context.Context, userID string) (*message
 
 | Layer | Responsibility | Guidelines |
 |-------|---------------|------------|
-| **API Layer** | HTTP protocol conversion | Only parameter binding, auth checks, calling Core, returning response |
+| **API Layer** | HTTP protocol conversion | Only handle parameter binding, authorization, call Core, return response |
 | **Core Layer** | Business logic orchestration | Define all interfaces, contain domain models and business methods |
-| **Store Layer** | Data persistence | Implement Storer interfaces defined in Core |
-| **Adapter Layer** | Cross-domain collaboration | Implement Provider interfaces defined in Core |
+| **Store Layer** | Data persistence | Implement Storer interfaces defined by Core layer |
+| **Adapter Layer** | Cross-domain collaboration | Implement Provider interfaces defined by Core layer |
 
 **Core Mantra:**
 ```
-Core imports none, interfaces define contracts;
+Core imports nothing external, interfaces define contracts;
 Generation ensures consistency, assembly at the edge;
-Types guard boundaries, tests need no dependencies;
-Small steps run steady, refactoring becomes easy.
+Types guard boundaries, tests have no dependencies;
+Small steps run steady, refactoring is no longer hard.
 ```
 
 ---
 
-## 📚 Design References
+## Design References
 
 - [Google API Design Guide](https://google-cloud.gitbook.io/api-design-guide)
 - [Clean Architecture - Robert C. Martin](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
@@ -140,7 +140,7 @@ Small steps run steady, refactoring becomes easy.
 
 ---
 
-## 🚀 Installation
+## Installation
 
 ```bash
 go install github.com/ixugo/godddx@latest
@@ -150,13 +150,13 @@ go install golang.org/x/tools/cmd/goimports@latest
 
 ---
 
-## 🤖 MCP Integration (Cursor/Claude)
+## MCP Integration (Cursor/Claude)
 
-godddx supports running as an MCP (Model Context Protocol) server, allowing AI assistants to directly invoke code generation capabilities.
+godddx supports running as an MCP (Model Context Protocol) server, allowing AI assistants to directly call code generation features.
 
 ### Configure Cursor
 
-Add MCP server configuration in Cursor settings (`~/.cursor/mcp.json`):
+You can copy the `.cursor/mcp.json` from this project to your development project, or add MCP server configuration in Cursor settings (`~/.cursor/mcp.json`):
 
 ```json
 {
@@ -169,24 +169,23 @@ Add MCP server configuration in Cursor settings (`~/.cursor/mcp.json`):
 }
 ```
 
-
 ### MCP Tool Description
 
-Once configured, the AI assistant can use the `generate_ddd_code` tool:
+After configuration, AI assistants can use the `generate_ddd_code` tool:
 
 | Parameter | Required | Description |
 |-----------|----------|-------------|
-| `content` | ✅ | Go domain model file content, must include package declaration and type struct definitions |
+| `content` | ✅ | Go domain model file content, must include package declaration and type struct definition |
 | `module` | ✅ | Go module name, e.g., `github.com/yourname/project` |
 | `output_dir` | ✅ | Project root directory path (directory containing go.mod) |
 
 ### Usage Example
 
-In Cursor, you can simply tell the AI:
+In Cursor, you can directly tell the AI:
 
-> "Help me generate DDD code for a User domain model in the /path/to/myproject directory"
+> "Use the godddx tool to generate DDD code for a User domain model"
 
-The AI will automatically call the godddx MCP tool to generate the code.
+The AI will automatically call the godddx MCP tool to generate code.
 
 ---
 
@@ -202,10 +201,10 @@ go mod init myproject
 
 ### 2. Define Domain Model
 
-Create `tables/<domain>/<entity>.go` file and define the entity structure:
+Create `tables/<domain>/<entity>.go` file and define entity structure:
 
 ```go
-// Package name becomes the generated module directory name
+// Package name will be the generated module directory name
 package user
 
 import "github.com/ixugo/goddd/pkg/orm"
@@ -213,7 +212,7 @@ import "github.com/ixugo/goddd/pkg/orm"
 type User struct {
     // Must include ID, CreatedAt, UpdatedAt
     ID        int      // Integer ID
-    // ID     string   // Or string ID (use uniqueid.Core to generate)
+    // ID     string   // Or string ID (generated using uniqueid.Core)
     CreatedAt orm.Time
     UpdatedAt orm.Time
 
@@ -230,15 +229,15 @@ godddx -f tables/user/user.go
 
 ### 4. Register Routes
 
-Call the generated `RegisterUser` function in your project to register the code with gin router.
+Call the generated `RegisterUser` function in your project to register routes with gin.
 
 ---
 
-## 💡 Tips
+## Tips & Tricks
 
-### String IDs
+### String ID
 
-Use short IDs instead of UUIDs:
+Use short ID instead of UUID:
 
 ```go
 import "github.com/ixugo/goddd/domain/uniqueid"
@@ -248,64 +247,65 @@ type User struct {
 }
 ```
 
-The generator handles this automatically, defaulting to 6-character random IDs. To modify the length, search for `NewUniqueID` function, or call `uni.UniqueIDWithCustomLen()` to specify the length.
+The generation tool handles this automatically, defaulting to 6-character random IDs. To modify the length, search for the `NewUniqueID` function, or call `uni.UniqueIDWithCustomLen()` to specify length.
 
 It's recommended to define prefix constants for string IDs to distinguish entity types.
 
 ### Automatic Dependency Injection
 
-When using this tool in the goddd project root directory, it will automatically update:
+When using this tool in the goddd project root, it automatically updates:
 - `internal/web/api/provider.go`
 - `internal/web/api/api.go`
 
 ### Model Requirements
 
-Structs must include `ID`, `CreatedAt`, `UpdatedAt` fields, otherwise the generated code will need minor adjustments.
+Structs must include `ID`, `CreatedAt`, `UpdatedAt` fields, otherwise generated code may need minor adjustments.
 
 ### Caching Recommendations
 
-Caching code may not be necessary in early stages. Consider deleting the generated `store/cache` directory and enabling it later when performance optimization is needed.
+Cache code may be unnecessary in early stages. Consider deleting the generated `store/cache` directory and enabling it later during performance optimization.
 
 ### API Layer Parameter Filling
 
-If an Input parameter is filled by the API layer (e.g., current logged-in user), its tag should use `json:"-"` with a comment:
+If an Input parameter is filled by the API layer (e.g., current logged-in user), its tag should use `json:"-"` with a comment explaining:
 
 ```go
 type FindMessageInput struct {
     web.PagerFilter
-    ReceiverID string `json:"-"`    // Receiver ID (filled by API layer with current user)
+    ReceiverID string `json:"-"`    // Receiver ID (filled by API layer with current logged-in user)
     Type       string `form:"type"` // Message type
 }
 ```
 
 ---
 
-## ✅ Feature List
+## Feature List
 
 - [x] Generate 5 common CRUD operations (Create, Read, Update, Delete, Paginated Search)
-- [x] Generate 5 common CRUD cache operations (Redis supported)
+- [x] Generate 5 common CRUD cache operations (Redis support)
+- [x] MCP support
 - [ ] Generate test functions for 5 common CRUD operations
 - [ ] Generate API documentation for 5 common CRUD operations
 - [ ] Support frontend-specified sorting in paginated queries
 
 ---
 
-## ❓ FAQ
+## FAQ
 
-### Why not generate code from the database?
+### Why not generate code by reading the database?
 
-Tables often use JSON types, and reading from the database cannot generate JSON structs. Starting from Go structs better expresses domain models.
+Tables often use JSON types, and reading the database cannot generate JSON structs. Starting from Go structs better expresses domain models.
 
-### What is the `CacheKey` method in the model for?
+### What is the `CacheKey` method defined in models used for?
 
-Generated cache code needs a key to get values. The `CacheKey` method determines the model's unique identifier:
+Generated cache code needs to get values by key. The `CacheKey` method determines the model's unique identifier:
 
 - Defaults to `ID`
-- Can be modified to other keys if ID is not the frequent query field
-- Example: In the goddd project's token implementation, hash is used as the key
+- If queries are frequently done by something other than ID, modify accordingly
+- Example: In the goddd project, token implementation uses hash as the key
 
 ---
 
-## 📜 License
+## License
 
 [MIT License](./LICENSE.txt)
