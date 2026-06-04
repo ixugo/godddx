@@ -11,25 +11,25 @@ import "gorm.io/gorm"
 
 // {{.Name}}Storer Instantiation interface
 type {{.Name}}Storer interface{
-	Find(context.Context, *[]*{{.Name}}, orm.Pager, ...orm.QueryOption) (int64,error)
+	List(context.Context, *[]*{{.Name}}, orm.Pager, ...orm.QueryOption) (int64,error)
 	Get(context.Context,*{{.Name}},...orm.QueryOption) error
-	Add(context.Context,*{{.Name}}) error
-	Edit(context.Context,*{{.Name}},func(*{{.Name}}),...orm.QueryOption) error
-	Del(context.Context,*{{.Name}}, ...orm.QueryOption) error
+	Create(context.Context,*{{.Name}}) error
+	Update(context.Context,*{{.Name}},func(*{{.Name}}),...orm.QueryOption) error
+	Delete(context.Context,*{{.Name}}, ...orm.QueryOption) error
 	Count(context.Context, ...orm.QueryOption) (int64,error)
 
 	Session(context.Context, ...func(*gorm.DB) error) error
-	EditWithSession(*gorm.DB, *{{.Name}}, func(b *{{.Name}}) error, ...orm.QueryOption) error
+	UpdateWithSession(*gorm.DB, *{{.Name}}, func(b *{{.Name}}) error, ...orm.QueryOption) error
 }
 
-// Find{{.Name}} Paginated search
-func (c Core) Find{{.Name}}s(ctx context.Context,in *Find{{.Name}}Input) ([]*{{.Name}},int64,error) {
+// List{{.Name}} Paginated search
+func (c Core) List{{.Name}}s(ctx context.Context,in *List{{.Name}}Input) ([]*{{.Name}},int64,error) {
 	query := orm.NewQuery(1).OrderBy("created_at DESC")
 
 	items := make([]*{{.Name}},0, in.Limit())
-	total,err := c.store.{{.Name}}().Find(ctx,&items,in,query.Encode()...)
+	total,err := c.store.{{.Name}}().List(ctx,&items,in,query.Encode()...)
 	if err != nil {
-		return nil,0,reason.ErrDB.Withf(`Find in[%+v] err[%s]`, in, err.Error())
+		return nil,0,reason.ErrDB.Withf(`List in[%+v] err[%s]`, in, err.Error())
 	}
 	return items,total,nil
 }
@@ -47,37 +47,37 @@ func (c Core) Get{{.Name}}(ctx context.Context,id {{if .IsStringID}}string{{else
 	return &out,nil
 }
 
-// Add{{.Name}} Insert into database
-func (c Core) Add{{.Name}}(ctx context.Context,in *Add{{.Name}}Input) (*{{.Name}},error) {
+// Create{{.Name}} Insert into database
+func (c Core) Create{{.Name}}(ctx context.Context,in *Create{{.Name}}Input) (*{{.Name}},error) {
 	var out {{.Name}}
 	if err :=copier.Copy(&out, in);err!=nil{
 		slog.ErrorContext( ctx, "Copy","err",err)
 	}
 	{{ if .ExistsUniqueID }}// TODO: 建议定义前缀
 	out.ID = c.uni.UniqueID(""){{ end }}
-	if err := c.store.{{.Name}}().Add(ctx, &out );err!=nil{
-		return nil,reason.ErrDB.Withf(`Add err[%s]`, err.Error())
+	if err := c.store.{{.Name}}().Create(ctx, &out );err!=nil{
+		return nil,reason.ErrDB.Withf(`Create err[%s]`, err.Error())
 	}
 	return &out,nil
 }
 
-// Edit{{.Name}} Update object information
-func (c Core) Edit{{.Name}}(ctx context.Context,in *Edit{{.Name}}Input,id {{if .IsStringID}}string{{else}}int{{end}}) (*{{.Name}},error) {
+// Update{{.Name}} Update object information
+func (c Core) Update{{.Name}}(ctx context.Context,in *Update{{.Name}}Input,id {{if .IsStringID}}string{{else}}int{{end}}) (*{{.Name}},error) {
 	var out {{.Name}}
-	if err :=c.store.{{.Name}}().Edit(ctx,&out,func(b *{{.Name}}){
+	if err :=c.store.{{.Name}}().Update(ctx,&out,func(b *{{.Name}}){
 		if err :=copier.Copy(b, in);err!=nil{
 			slog.ErrorContext( ctx,"Copy","err",err)
 		}
 	},orm.Where("id=?",id));err!=nil{
-		return nil,reason.ErrDB.Withf(`Edit id[%v] err[%s]`, id,err.Error())
+		return nil,reason.ErrDB.Withf(`Update id[%v] err[%s]`, id,err.Error())
 	}
 	return &out,nil
 }
 
-// Del{{.Name}} Delete object
-func (c Core) Del{{.Name}}(ctx context.Context,id {{if .IsStringID}}string{{else}}int{{end}}) (*{{.Name}},error) {
+// Delete{{.Name}} Delete object
+func (c Core) Delete{{.Name}}(ctx context.Context,id {{if .IsStringID}}string{{else}}int{{end}}) (*{{.Name}},error) {
 	var out {{.Name}}
-	if err := c.store.{{.Name}}().Del(ctx, &out, orm.Where("id=?",id));err!=nil{
+	if err := c.store.{{.Name}}().Delete(ctx, &out, orm.Where("id=?",id));err!=nil{
 		return nil,reason.ErrDB.Withf(`Del id[%v] err[%s]`,id, err.Error())
 	}
 	return &out,nil

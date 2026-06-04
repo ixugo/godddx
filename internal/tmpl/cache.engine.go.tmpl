@@ -24,9 +24,9 @@ func(c *{{.Name}}) cacheKey(key any) string {
 }
 
 
-// Find implements {{.PackageName}}.{{.Name}}Storer.
-func (c *{{.Name}})Find(ctx context.Context, bs *[]*{{.PackageName}}.{{.Name}},page orm.Pager,opts...orm.QueryOption) (int64,error){
-	return c.store.{{.Name}}().Find(ctx,bs,page,opts...)
+// List implements {{.PackageName}}.{{.Name}}Storer.
+func (c *{{.Name}})List(ctx context.Context, bs *[]*{{.PackageName}}.{{.Name}},page orm.Pager,opts...orm.QueryOption) (int64,error){
+	return c.store.{{.Name}}().List(ctx,bs,page,opts...)
 }
 
 // Get implements {{.PackageName}}.{{.Name}}Storer.
@@ -47,18 +47,18 @@ func (c *{{.Name}})Get(ctx context.Context,model *{{.PackageName}}.{{.Name}},opt
 	return nil
 }
 
-// Add implements {{.PackageName}}.{{.Name}}Storer.
-func (c *{{.Name}})Add(ctx context.Context,model *{{.PackageName}}.{{.Name}}) error {
-	if err := c.store.{{.Name}}().Add(ctx, model);err!=nil{
+// Create implements {{.PackageName}}.{{.Name}}Storer.
+func (c *{{.Name}})Create(ctx context.Context,model *{{.PackageName}}.{{.Name}}) error {
+	if err := c.store.{{.Name}}().Create(ctx, model);err!=nil{
 		return err
 	}
 	c.{{$tableName}}.Set(ctx,c.cacheKey(model.CacheKey() ),  model)
 	return nil
 }
 
-// Edit implements {{.PackageName}}.{{.Name}}Storer.
-func (c *{{.Name}})Edit(ctx context.Context,model *{{.PackageName}}.{{.Name}},changeFn func(*{{.PackageName}}.{{.Name}}),opts...orm.QueryOption) error {
-	if err := c.store.{{.Name}}().Edit(ctx, model,changeFn, opts...);err!=nil{
+// Update implements {{.PackageName}}.{{.Name}}Storer.
+func (c *{{.Name}})Update(ctx context.Context,model *{{.PackageName}}.{{.Name}},changeFn func(*{{.PackageName}}.{{.Name}}),opts...orm.QueryOption) error {
+	if err := c.store.{{.Name}}().Update(ctx, model,changeFn, opts...);err!=nil{
 		return err
 	}
 	c.{{$tableName}}.Set(ctx, c.cacheKey(model.CacheKey() ),  model)
@@ -66,8 +66,8 @@ func (c *{{.Name}})Edit(ctx context.Context,model *{{.PackageName}}.{{.Name}},ch
 }
 
 // Del implements {{.PackageName}}.{{.Name}}Storer.
-func (c *{{.Name}})Del(ctx context.Context,model *{{.PackageName}}.{{.Name}},opts...orm.QueryOption) error {
-	if err := c.store.{{.Name}}().Del(ctx, model, opts...);err!=nil{
+func (c *{{.Name}})Delete(ctx context.Context,model *{{.PackageName}}.{{.Name}},opts...orm.QueryOption) error {
+	if err := c.store.{{.Name}}().Delete(ctx, model, opts...);err!=nil{
 		return err
 	}
 	c.{{$tableName}}.Del(ctx,c.cacheKey(model.CacheKey() ))
@@ -85,9 +85,9 @@ func (c *{{.Name}})Session(ctx context.Context,changeFns ...func(*gorm.DB) error
 	return nil
 }
 
-// EditWithSession 修改事务
-func (c *{{.Name}}) EditWithSession(tx *gorm.DB, model *{{.PackageName}}.{{.Name}}, changeFn func(b *{{.PackageName}}.{{.Name}}) error, opts ...orm.QueryOption) error {
-//	if err := c.store.{{.Name}}().EditWithSession(ctx,model, changeFn,opts...);err!=nil{
+// UpdateWithSession 修改事务
+func (c *{{.Name}}) UpdateWithSession(tx *gorm.DB, model *{{.PackageName}}.{{.Name}}, changeFn func(b *{{.PackageName}}.{{.Name}}) error, opts ...orm.QueryOption) error {
+//	if err := c.store.{{.Name}}().UpdateWithSession(ctx,model, changeFn,opts...);err!=nil{
 // return err
 //	}
 //	c.{{$tableName}}.Set(ctx, c.cacheKey(model.CacheKey() ),  model)

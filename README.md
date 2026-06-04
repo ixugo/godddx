@@ -82,7 +82,7 @@ GoDDD is deeply inspired by [Clean Architecture](https://blog.cleancoder.com/unc
 // ❌ Wrong approach: message directly depends on user package
 import "myapp/internal/core/user"
 
-func (c *Core) AddMessage(ctx context.Context, in AddMessageInput) error {
+func (c *Core) CreateMessage(ctx context.Context, in CreateMessageInput) error {
     u := user.NewService().Get(in.UserID) // Breaks cohesion!
 }
 
@@ -91,7 +91,7 @@ type UserProvider interface {
     GetUserBrief(ctx context.Context, userID string) (*UserBrief, error)
 }
 
-func (c *Core) AddMessage(ctx context.Context, in AddMessageInput, provider UserProvider) error {
+func (c *Core) CreateMessage(ctx context.Context, in CreateMessageInput, provider UserProvider) error {
     user, _ := provider.GetUserBrief(ctx, in.To)
     // Use UserBrief type defined in this domain
 }
@@ -270,7 +270,7 @@ Cache code may be unnecessary in early stages. Consider deleting the generated `
 If an Input parameter is filled by the API layer (e.g., current logged-in user), its tag should use `json:"-"` with a comment explaining:
 
 ```go
-type FindMessageInput struct {
+type ListMessageInput struct {
     web.PagerFilter
     ReceiverID string `json:"-"`    // Receiver ID (filled by API layer with current logged-in user)
     Type       string `form:"type"` // Message type

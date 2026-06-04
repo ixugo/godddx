@@ -82,7 +82,7 @@ GoDDD 深受 [清晰架构（Clean Architecture）](https://blog.cleancoder.com/
 // ❌ 错误做法：message 直接依赖 user 包
 import "myapp/internal/core/user"
 
-func (c *Core) AddMessage(ctx context.Context, in AddMessageInput) error {
+func (c *Core) CreateMessage(ctx context.Context, in CreateMessageInput) error {
     u := user.NewService().Get(in.UserID) // 破坏内聚！
 }
 
@@ -91,7 +91,7 @@ type UserProvider interface {
     GetUserBrief(ctx context.Context, userID string) (*UserBrief, error)
 }
 
-func (c *Core) AddMessage(ctx context.Context, in AddMessageInput, provider UserProvider) error {
+func (c *Core) CreateMessage(ctx context.Context, in CreateMessageInput, provider UserProvider) error {
     user, _ := provider.GetUserBrief(ctx, in.To)
     // 使用本领域定义的 UserBrief 类型
 }
@@ -271,7 +271,7 @@ type User struct {
 如果某个 Input 参数由 API 层填充（如当前登录用户），其 tag 应使用 `json:"-"` 并注释说明：
 
 ```go
-type FindMessageInput struct {
+type ListMessageInput struct {
     web.PagerFilter
     ReceiverID string `json:"-"`    // 接收者ID（由 API 层填充当前登录用户）
     Type       string `form:"type"` // 消息类型

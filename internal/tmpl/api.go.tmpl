@@ -39,11 +39,11 @@ func Register{{$PackageName}}(g gin.IRouter,api {{$PackageName}}API,handler...gi
 	{{range .Models}}{{if .IsNotDB}}{{else}}
 	{
 		group := g.Group("/{{.Name|ToUnderscore|Plural}}", handler...)
-		group.GET("", web.WrapH(api.find{{.Name}}s))
+		group.GET("", web.WrapH(api.list{{.Name}}s))
 		group.GET("/:id", web.WrapH(api.get{{.Name}}))
-		group.PUT("/:id", web.WrapH(api.edit{{.Name}}))
-		group.POST("", web.WrapH(api.add{{.Name}}))
-		group.DELETE("/:id", web.WrapH(api.del{{.Name}}))
+		group.PUT("/:id", web.WrapH(api.update{{.Name}}))
+		group.POST("", web.WrapH(api.create{{.Name}}))
+		group.DELETE("/:id", web.WrapH(api.delete{{.Name}}))
 	}
 	{{end}}{{end}}
 }
@@ -54,8 +54,8 @@ func Register{{$PackageName}}(g gin.IRouter,api {{$PackageName}}API,handler...gi
 
 // >>> {{$tableName}} >>>>>>>>>>>>>>>>>>>>
 
-func (a {{$PackageName}}API) find{{.Name}}s(c *gin.Context,in *{{$packageName}}.Find{{.Name}}Input) (any,error) {
-	items,total,err :=a.{{$packageName}}Core.Find{{.Name}}s(c.Request.Context(), in )
+func (a {{$PackageName}}API) list{{.Name}}s(c *gin.Context,in *{{$packageName}}.List{{.Name}}Input) (any,error) {
+	items,total,err :=a.{{$packageName}}Core.List{{.Name}}s(c.Request.Context(), in )
 	return gin.H{"items":items,"total":total},err
 }
 
@@ -64,18 +64,18 @@ func (a {{$PackageName}}API) get{{.Name}}(c *gin.Context,_ *struct{})( *{{$packa
 	return a.{{$packageName}}Core.Get{{.Name}}(c.Request.Context(),{{$tableName}}ID)
 }
 
-func (a {{$PackageName}}API) edit{{.Name}}(c *gin.Context,in *{{$packageName}}.Edit{{.Name}}Input)(*{{$packageName}}.{{.Name}},error){
+func (a {{$PackageName}}API) update{{.Name}}(c *gin.Context,in *{{$packageName}}.Update{{.Name}}Input)(*{{$packageName}}.{{.Name}},error){
 	{{if .IsStringID}}{{$tableName}}ID := c.Param("id"){{else}}{{$tableName}}ID,_ := strconv.Atoi(c.Param("id")){{end}}
-	return a.{{$packageName}}Core.Edit{{.Name}}(c.Request.Context(), in,{{$tableName}}ID )
+	return a.{{$packageName}}Core.Update{{.Name}}(c.Request.Context(), in,{{$tableName}}ID )
 }
 
-func (a {{$PackageName}}API) add{{.Name}}(c *gin.Context,in *{{$packageName}}.Add{{.Name}}Input)(*{{$packageName}}.{{.Name}},error){
-	return a.{{$packageName}}Core.Add{{.Name}}(c.Request.Context(), in)
+func (a {{$PackageName}}API) create{{.Name}}(c *gin.Context,in *{{$packageName}}.Create{{.Name}}Input)(*{{$packageName}}.{{.Name}},error){
+	return a.{{$packageName}}Core.Create{{.Name}}(c.Request.Context(), in)
 }
 
-func (a {{$PackageName}}API) del{{.Name}}(c *gin.Context,_ *struct{})(*{{$packageName}}.{{.Name}},error){
+func (a {{$PackageName}}API) delete{{.Name}}(c *gin.Context,_ *struct{})(*{{$packageName}}.{{.Name}},error){
 	{{if .IsStringID}}{{$tableName}}ID := c.Param("id"){{else}}{{$tableName}}ID,_ := strconv.Atoi(c.Param("id")){{end}}
-	return a.{{$packageName}}Core.Del{{.Name}}(c.Request.Context(), {{$tableName}}ID)
+	return a.{{$packageName}}Core.Delete{{.Name}}(c.Request.Context(), {{$tableName}}ID)
 }
 
 {{end}}{{end}}
