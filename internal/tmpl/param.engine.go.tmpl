@@ -10,6 +10,7 @@ type List{{.Name}}Input struct{
 }
 
 type Update{{.Name}}Input struct{
+	ID {{if .IsStringID}}string{{else}}int{{end}} `uri:"id"`
  {{range .Lines}}{{if or (eq .Name "ID") (eq .Name "CreatedAt") (eq .Name "DeletedAt") (eq .Name "UpdatedAt")}}{{else}}	{{.Name}} {{.Type}} `json:"{{.Name | ToUnderscore}}"` {{.Comment|ToComment}}
 {{end}}{{end}}
 }
@@ -17,4 +18,12 @@ type Update{{.Name}}Input struct{
 type Create{{.Name}}Input struct{
  {{range .Lines}}{{if or (eq .Name "ID") (eq .Name "CreatedAt") (eq .Name "DeletedAt") (eq .Name "UpdatedAt")}}{{else}}	{{.Name}} {{.Type}} `json:"{{.Name | ToUnderscore}}"` {{.Comment|ToComment}}
 {{end}}{{end}}
+}
+
+type Get{{.Name}}Input struct{
+	ID {{if .IsStringID}}string{{else}}int{{end}} `uri:"id"`
+}
+
+type Delete{{.Name}}Input struct{
+	ID {{if .IsStringID}}string{{else}}int{{end}} `uri:"id"`
 }
