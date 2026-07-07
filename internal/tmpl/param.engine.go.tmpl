@@ -2,11 +2,17 @@
 package {{.PackageName}}
 
 import "github.com/ixugo/goddd/pkg/web"
+import "github.com/ixugo/goddd/pkg/orm"
 
 type List{{.Name}}Input struct{
 	web.PagerFilter
  {{range .Lines}}{{if or (eq .Name "ID") (eq .Name "CreatedAt") (eq .Name "DeletedAt") (eq .Name "UpdatedAt")}}{{else}}	{{.Name}} {{.Type}} `form:"{{.Name | ToUnderscore}}"` {{.Comment|ToComment}}
 {{end}}{{end}}
+}
+
+func (i *List{{.Name}}Input) ToQuery() *orm.Query {
+   // TODO: 实现 ToQuery 条件
+   return orm.NewQuery(1).OrderBy("created_at DESC")
 }
 
 type Update{{.Name}}Input struct{

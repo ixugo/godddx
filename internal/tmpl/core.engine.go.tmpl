@@ -24,7 +24,7 @@ type {{.Name}}Storer interface{
 
 // List{{.Name}} Paginated search
 func (c Core) List{{.Name}}s(ctx context.Context,in *List{{.Name}}Input) ([]*{{.Name}},int64,error) {
-	query := orm.NewQuery(1).OrderBy("created_at DESC")
+    query := in.ToQuery()
 
 	items := make([]*{{.Name}},0, in.Limit())
 	total,err := c.store.{{.Name}}().List(ctx,&items,in,query.Encode()...)
